@@ -113,6 +113,8 @@ export class UserGroupService {
 
   async findUserPersonalGroup(userId: number) {
     try {
+      console.log('userId');
+      console.log(userId);
       const toreturn = await this.userGroupRepository.findOne({
         where: { ownerId: userId, type: UserGroupTypes.PERSONAL },
       });

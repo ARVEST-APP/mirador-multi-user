@@ -73,15 +73,15 @@ export class LinkGroupProjectService {
     }
   }
 
-  async findAllGroupProjectByUserGroupId(userId: number) {
+  async findAllGroupProjectByUserGroupId(userGroupID: number) {
     try {
       return await this.linkGroupProjectRepository.find({
-        where: { user_group: { id: userId } },
+        where: { user_group: { id: userGroupID } },
         relations: ['project', 'user_group'],
       });
     } catch (error) {
       throw new InternalServerErrorException(
-        `An error occurred while finding Group for this project id : ${userId}`,
+        `An error occurred while finding Group for this project id : ${userGroupID}`,
         error,
       );
     }
@@ -436,21 +436,26 @@ export class LinkGroupProjectService {
             await this.groupService.findUserPersonalGroup(
               groupProject.project.ownerId,
             );
-          const projectData = {
-            ...groupProject.project,
-            rights: groupProject.rights,
-            shared: Number(groupProject.project.ownerId) !== Number(userId),
-            ...(groupProject.user_group.type === UserGroupTypes.MULTI_USER && {
-              share: 'group',
-            }),
-            personalOwnerGroupId: personalOwnerGroup.id,
-          };
+          console.log('personalOwnerGroup');
+          console.log(personalOwnerGroup);
+          if (personalOwnerGroup !== null) {
+            const projectData = {
+              ...groupProject.project,
+              rights: groupProject.rights,
+              shared: Number(groupProject.project.ownerId) !== Number(userId),
+              ...(groupProject.user_group.type ===
+                UserGroupTypes.MULTI_USER && {
+                share: 'group',
+              }),
+              personalOwnerGroupId: personalOwnerGroup.id,
+            };
 
-          if (
-            !existingProject ||
-            currentRights > PROJECT_RIGHTS_PRIORITY[existingProject.rights]
-          ) {
-            projectsMap.set(projectId, projectData);
+            if (
+              !existingProject ||
+              currentRights > PROJECT_RIGHTS_PRIORITY[existingProject.rights]
+            ) {
+              projectsMap.set(projectId, projectData);
+            }
           }
         }
       }
