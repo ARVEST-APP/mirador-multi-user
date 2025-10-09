@@ -1,4 +1,4 @@
-# Mirador multi user 
+# Mirador multi user
 
 Mirador Multi user is a project that aims to create a multi-user environment for the Mirador 4 viewer. It is the core component of the tool [Arvest](https://arvest.app/en).
 
@@ -18,7 +18,7 @@ Contributions, issues report and feedback are welcome.
 
 ## Installation DEV (Docker)
 
-- `git clone git@github.com:TETRAS-IIIF/mirador-multi-user.git`
+- `git clone git@github.com:ARVEST-APP/mirador-multi-user.git`
 - `cd mirador-multi-user`
 - `cp .env.dev.sample .env`
 - `nvm use`
