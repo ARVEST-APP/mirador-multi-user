@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 import { ReactNode } from "react";
 import storage from "../../../utils/storage.ts";
 import { TermsFooter } from "../../../../customAssets/TermsFooter.tsx";
+import { useTranslation } from "react-i18next";
 
 type LayoutProps = {
   children: ReactNode;
@@ -12,6 +13,8 @@ type LayoutProps = {
 };
 
 export const Layout = ({ children, title, rightButton }: LayoutProps) => {
+  const { t } = useTranslation();
+
   return (
     <Grid
       container
@@ -20,8 +23,10 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
       alignItems="center"
       min-height="100vh"
       sx={{
-        height: "100vh",
+        height: "max-content",
       }}
+      wrap="nowrap"
+      gap="20px"
     >
       <Grid
         item
@@ -29,9 +34,12 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
         direction="row"
         justifyContent="space-around"
         alignItems="center"
+        gap="20px"
+        padding="40px"
       >
         <Grid item>
           <NavLink
+            aria-label={t("backToHome")}
             to="/"
             onClick={() => {
               storage.clearToken();

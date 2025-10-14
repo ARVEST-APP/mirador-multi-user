@@ -30,6 +30,7 @@ export type UserResponse = {
 export type RegisterFormData = {
   name: string;
   mail: string;
+  confirmMail: string,
   password: string;
   confirmPassword: string;
 };
@@ -39,24 +40,91 @@ export type LoginFormData = {
   password: string;
 };
 
+//Test
+
+// const mail = z.object({
+//   mail: z
+//     .string({
+//       required_error: 'requiredField',
+//       invalid_type_error: 'Email must be a string',
+//     }).min(1, { message: 'requiredField' })
+//     .email({
+//       message: `mailIsNotValid`
+//     })
+// });
+
+// const confirmMail = mail.extend({
+//   confirmMail: z.string({
+//     required_error: 'requiredField'
+//   }).min(1, { message: 'requiredField' })
+// }).refine((data) => data.mail.toLowerCase() === data.confirmMail.toLowerCase(), {
+//   message: `emailMismatch`,
+//   path: ['confirmMail'],
+// })
+
+// const name = z.object({
+//   name: z.string({
+//     required_error: 'requiredField',
+//     invalid_type_error: 'Name must be a string',
+//   }).min(1, { message: 'requiredField' })
+// });
+
+// const password = z.object({
+//   password: z.string().min(PASSWORD_MINIMUM_LENGTH, { message: `characterLimitForPassword` })
+// })
+
+// const confirmPassword = password.extend({
+//   confirmPassword: z.string().min(1, { message: 'requiredField' }),
+// }).refine((data) => data.password === data.confirmPassword, {
+//   message: `passwordMismatch`,
+//   path: ['confirmPassword'],
+// })
+
+// const registerFormZObject = z.object({
+//   ...mail.shape,
+//   ...confirmMail._def.schema.shape,
+//   ...name.shape,
+//   ...password.shape,
+//   ...confirmPassword._def.schema.shape
+// }).refine((data) => data.password === data.confirmPassword, {
+//   message: `passwordMismatch`,
+//   path: ['confirmPassword'],
+// })
+//   .refine((data) => data.mail.toLowerCase() === data.confirmMail.toLowerCase(), {
+//     message: `emailMismatch`,
+//     path: ['confirmMail'],
+//   });
+
+// export const UserSchema: ZodType<RegisterFormData> = registerFormZObject;
+
+//TODO: Erell - Vérfifier que le Pseudo n'existe pas déjà
 export const UserSchema: ZodType<RegisterFormData> = z
   .object({
     mail: z
       .string({
-        required_error: 'email is required',
+        required_error: 'requiredField',
         invalid_type_error: 'Email must be a string',
-      })
-      .email(),
+      }).min(1, { message: 'requiredField' })
+      .email({
+        message: `mailIsNotValid`
+      }),
+    confirmMail: z.string({
+      required_error: 'requiredField'
+    }).min(1, { message: 'requiredField' }),
     name: z.string({
-      required_error: 'Name is required',
+      required_error: 'requiredField',
       invalid_type_error: 'Name must be a string',
-    }),
-    password: z.string().min(PASSWORD_MINIMUM_LENGTH, { message: 'Password is too short' }),
-    confirmPassword: z.string(),
+    }).min(1, { message: 'requiredField' }),
+    password: z.string().min(PASSWORD_MINIMUM_LENGTH, { message: `characterLimitForPassword` }),
+    confirmPassword: z.string().min(1, { message: 'requiredField' }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
+    message: `passwordMismatch`,
     path: ['confirmPassword'],
+  })
+  .refine((data) => data.mail.toLowerCase() === data.confirmMail.toLowerCase(), {
+    message: `emailMismatch`,
+    path: ['confirmMail'],
   });
 
 export const LoginSchema: ZodType<LoginFormData> = z.object({

@@ -7,6 +7,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import "dayjs/locale/en";
 import "dayjs/locale/fr";
 import "dayjs/locale/es";
+import { updateProjetTermsLang } from "../../../customAssets/TermsFooter";
 
 dayjs.extend(localizedFormat);
 
@@ -44,6 +45,8 @@ const loadLanguage = async (lng: string): Promise<void> => {
   console.log(`✅ Day.js locale set to: ${dayjs.locale()}`);
 
   await i18n.changeLanguage(lng);
+
+  updateProjetTermsLang(lng);
 };
 
 const detectedLng =

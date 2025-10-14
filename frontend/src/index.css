@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -7,4 +8,11 @@ html, body {
 
 #root {
     height: 100%;
+    --input-error-color: #881117;
+}
+
+/* need to change the default red because of the constrast color with the custum background color */
+.Mui-error {
+    color: var(--input-error-color) !important;
+    border-color: var(--input-error-color) !important;
 }

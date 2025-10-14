@@ -8,15 +8,22 @@ import {
   Typography,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { RegisterCredentialsDTO } from "../auth/api/register.ts";
 import toast from 'react-hot-toast';
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { useUser } from '../../utils/auth.tsx';
+import { useUser, useRegister } from '../../utils/auth.tsx';
 import { useUpdateUser } from '../../utils/customHooks/useUpdateProfile.ts';
 import { PASSWORD_MINIMUM_LENGTH } from '../../utils/utils.ts';
 
 export const ProfileUpdateForm = () => {
   const user = useUser();
   const { t } = useTranslation();
+
+  const isUserExisting = user.data != null;
+  const navigate = useNavigate(); // Use hooks at the top level
+    //this is a hook from React-Query that allow us to use createUser(data) bellow
+  const { mutateAsync: createUser } = useRegister();
   const [formValues, setFormValues] = useState({
     name: '',
     mail: '',
@@ -38,7 +45,7 @@ export const ProfileUpdateForm = () => {
   });
 
   const updateUserMutation = useUpdateUser();
-  useEffect(() => {
+  if(user != null && user.data != null) useEffect(() => {
     setFormValues((prev) => ({
       ...prev,
       name: user.data!.name,
@@ -70,7 +77,7 @@ export const ProfileUpdateForm = () => {
       valid = false;
     }
 
-    if (formValues.oldPassword.length < 1) {
+    if (isUserExisting && formValues.oldPassword.length < 1) {
       newErrors.oldPassword = t('passwordIsEmpty')
       valid = false;
     }
@@ -95,14 +102,36 @@ export const ProfileUpdateForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      updateUserMutation.mutate(formValues, {
-        onSuccess: () => {
-          toast.success(t('userSuccessfullyUpdated'));
-        },
-        onError: () => {
-          toast.error(t('toastErrorUpdateUser'));
-        },
-      });
+      if(isUserExisting){
+        updateUserMutation.mutate(formValues, {
+          onSuccess: () => {
+            toast.success(t('userSuccessfullyUpdated'));
+          },
+          onError: () => {
+            toast.error(t('toastErrorUpdateUser'));
+          },
+        });
+      }
+      else {
+        async (data: RegisterCredentialsDTO) => {
+          await createUser(data, {
+            onSuccess: () => {
+              toast.success(t("accountCreated"),{duration:10000});
+              navigate("/");
+            },
+            onError: (error:any) =>
+            {
+              if(error.status === 409){
+                toast.error("user_already_exists");
+              } else
+              toast.error("error creation: " + error.toString());
+            }
+          });
+        }
+      }     
+    }
+    else { 
+      toast.error("There are some errors");
     }
   };
   const togglePasswordVisibility = (field: string) => {
@@ -122,7 +151,7 @@ export const ProfileUpdateForm = () => {
       }}
     >
       <Typography variant="h5" sx={{ mb: 3 }}>
-        {t('UpdateProfile')}
+        {isUserExisting ? t('UpdateProfile') : t('CreateProfile')}
       </Typography>
 
       <TextField
@@ -154,31 +183,37 @@ export const ProfileUpdateForm = () => {
         sx={{ mb: 2 }}
       />
 
-      <TextField
-        label={t('oldPassword')}
-        name="oldPassword"
-        type={showPassword.oldPassword ? 'text' : 'password'}
-        value={formValues.oldPassword}
-        onChange={handleChange}
-        error={!!errors.oldPassword}
-        helperText={errors.oldPassword}
-        fullWidth
-        sx={{ mb: 2 }}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => togglePasswordVisibility('oldPassword')}
-                edge="end"
-              >
-                {showPassword.oldPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }
-        }
-        inputProps={{ maxLength: 255 }}
-      />
+      {
+        isUserExisting ?
+          <TextField
+          label={t('oldPassword')}
+          name="oldPassword"
+          type={showPassword.oldPassword ? 'text' : 'password'}
+          value={formValues.oldPassword}
+          onChange={handleChange}
+          error={!!errors.oldPassword}
+          helperText={errors.oldPassword}
+          fullWidth
+          sx={{ mb: 2 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => togglePasswordVisibility('oldPassword')}
+                  edge="end"
+                >
+                  {showPassword.oldPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }
+          }
+          inputProps={{ maxLength: 255 }}
+          />
+        :
+        ''
+      }
+      
 
       <TextField
         label={t('newPassword')}
@@ -241,7 +276,10 @@ export const ProfileUpdateForm = () => {
         fullWidth
         sx={{ mt: 2 }}
       >
-        {t('saveChanges')}
+        {
+          isUserExisting ?
+          t('saveChanges') : t('sumbit') 
+        }
       </Button>
     </Box>
   );
