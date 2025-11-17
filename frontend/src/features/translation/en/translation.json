@@ -218,6 +218,7 @@
   "tooltipMediaLink": "Copy media's link",
   "tooltipSnapshotButton": "Generate project snapshot",
   "unsupportedMedia": "Unsupported media type. To upload videos, use YouTube, PeerTube, or provide a media URL.",
+  "unauthorizedModification": "Unauthorized modification, please check your password.",
   "urlIsNotValid": "URL is not valid",
   "userSuccessfullyUpdated": "User successfully updated",
   "users": "Users",
