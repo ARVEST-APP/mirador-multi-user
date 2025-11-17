@@ -1,4 +1,4 @@
-import { CustomTerms } from "./CustomTerms";
+// import { CustomTerms } from "./CustomTerms";
 import { useTranslation } from "react-i18next";
 
 let projetTermsLang = "EN";
@@ -13,8 +13,7 @@ export const TermsFooter = () => {
   return (
     <div>
       <a href={projetTermsUrl} target="_blank">{t("termsAndConditions")}</a>
-      <p>Hello word from footer</p>
-      <CustomTerms />
+      {/* <CustomTerms /> */}
     </div>
   )
 };

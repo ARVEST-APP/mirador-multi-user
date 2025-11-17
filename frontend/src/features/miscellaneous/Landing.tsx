@@ -52,9 +52,9 @@ export const Landing = () => {
           </Button>
         </Grid>
       </Grid>
-      <Grid item width={"100%"}>
-        <LandingFooter></LandingFooter>
-      </Grid>
+      {/* <Grid item width={"100%"}> */}
+      {/* <LandingFooter></LandingFooter> */}
+      {/* </Grid> */}
     </Grid>
   );
 };
