@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginFormData, LoginSchema } from '../types/types.ts';
 import { useLogin } from '../../../utils/auth.tsx';
-import { LoginCredentialsDTO } from '../api/login.ts';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import React from 'react';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -20,9 +20,12 @@ export const LoginForm = () => {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(LoginSchema),
+    mode: "onChange",
+    // reValidateMode: "onBlur",
+    shouldFocusError: true,
   });
 
-  const onSubmit = async (data: LoginCredentialsDTO) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       await loginUser(data, {
         onSuccess: () => navigate('/app/my-projects'),
@@ -33,12 +36,11 @@ export const LoginForm = () => {
   };
 
   const handleKeyDownEnterButton = (event: React.KeyboardEvent<HTMLButtonElement>, func: () => void) => {
-    console.log({ event });
     event.key === 'Enter' && func;
   }
 
   return (
-    <form>
+    <form name='login' aria-label={t('formLabel') + ' - ' + t('login')}>
       <Grid container flexDirection="column" spacing={2} style={{ minHeight: "fit-content" }}>
         <Grid item>
           <FormTextField
@@ -51,17 +53,29 @@ export const LoginForm = () => {
             error={errors.mail}
           />
         </Grid>
+        <Grid item>
+          <FormTextField
+            type='password'
+            placeholder={t('password')}
+            name="password"
+            autocomplete='password'
+            register={register}
+            required={true}
+            error={errors.password}
+          />
+        </Grid>
         <Grid item container alignItems="center" spacing={2}>
           <Grid item>
-            <FormTextField
-              type="password"
-              placeholder={t('password')}
-              name="password"
-              autocomplete='password'
-              register={register}
-              required={true}
-              error={errors.password}
-            />
+            <Button
+              type="submit"
+              aria-label={t("submitForm")}
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit(onSubmit)}
+            // onKeyDown={(event) => handleKeyDownEnterButton(event, handleSubmit(onSubmit))}
+            >
+              {t('submit')}
+            </Button>
           </Grid>
           <Grid item>
             <Button
@@ -74,18 +88,6 @@ export const LoginForm = () => {
               {t('forgot-password')}
             </Button>
           </Grid>
-        </Grid>
-        <Grid item container>
-          <Button
-            type="submit"
-            aria-label={t("submitForm")}
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit(onSubmit)}
-            onKeyDown={(event) => handleKeyDownEnterButton(event, handleSubmit(onSubmit))}
-          >
-            {t('submit')}
-          </Button>
         </Grid>
       </Grid>
     </form>

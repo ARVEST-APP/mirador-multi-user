@@ -56,10 +56,10 @@ const detectedLng =
 
 loadLanguage(detectedLng);
 
-export const availableLanguages = [
-  { code: "en", label: "English" },
-  { code: "fr", label: "Français" },
-];
+export enum availableLanguages {
+  en = "English",
+  fr = "Français"
+}
 
 export { loadLanguage };
 export default i18n;

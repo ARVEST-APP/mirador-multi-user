@@ -13,9 +13,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
+  newPassword: string;
+
   @Type(() => CreateProjectDto)
   @IsOptional()
-  Projects: CreateProjectDto[];
+  Projects?: CreateProjectDto[];
 
   preferredLanguage: Language;
 }

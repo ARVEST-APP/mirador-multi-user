@@ -1,16 +1,11 @@
-import { UserResponse } from "../types/types.ts";
+import { LoginFormData, UserResponse } from "../types/types.ts";
 import toast from "react-hot-toast";
 import storage from "../../../utils/storage.ts";
 import { t } from "i18next";
 
-export type LoginCredentialsDTO = {
-  mail: string;
-  password: string;
-  isImpersonate?: string;
-};
 
 export const login = async (
-  data: LoginCredentialsDTO,
+  data: LoginFormData,
 ): Promise<UserResponse> => {
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_URL}/auth/login`,

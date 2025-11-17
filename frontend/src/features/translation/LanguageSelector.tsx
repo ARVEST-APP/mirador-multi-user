@@ -6,14 +6,18 @@ import { loadLanguage } from "./loadLanguage.ts";
 import { SelectChangeEvent } from "@mui/material";
 import { availableLanguages } from "./i18n.ts";
 import { updatePreferredLanguage } from "./api/updatePreferredLanguage.ts";
+import { FieldError } from "react-hook-form";
 
 interface LanguageSelectorProps {
-  userId: number;
+  userId?: number;
+  name?: string;
+  error?: FieldError | undefined;
 }
 
-const LanguageSelector = ({ userId }: LanguageSelectorProps) => {
+const LanguageSelector = ({ userId, name, error }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
   const [language, setLanguage] = useState(i18n.language);
+  const availableLanguagesKeys: string[] = Object.keys(availableLanguages);
 
   useEffect(() => {
     setLanguage(i18n.language);
@@ -23,19 +27,21 @@ const LanguageSelector = ({ userId }: LanguageSelectorProps) => {
     const selectedLanguage = event.target.value;
     setLanguage(selectedLanguage);
     await loadLanguage(selectedLanguage);
-    await updatePreferredLanguage(userId, selectedLanguage);
+    userId && await updatePreferredLanguage(userId, selectedLanguage);
   };
 
   return (
     <Select
+      name={name}
       value={language}
       onChange={handleChange}
       displayEmpty
       inputProps={{ "aria-label": "Select language" }}
+      error={!!error}
     >
-      {availableLanguages.map((lang) => (
-        <MenuItem key={lang.code} value={lang.code}>
-          {lang.label}
+      {availableLanguagesKeys.map(lang => (
+        <MenuItem key={lang} value={lang}>
+          {availableLanguages[lang as keyof typeof availableLanguages]}
         </MenuItem>
       ))}
     </Select>

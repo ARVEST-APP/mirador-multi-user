@@ -23,7 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailServerService,
     private readonly impersonationService: ImpersonationService,
-  ) {}
+  ) { }
 
   async signIn(
     mail: string,
@@ -171,7 +171,8 @@ export class AuthService {
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(password, salt);
         await this.usersService.updateUser(user.id, {
-          password: hashedPassword,
+          password: user.password,
+          newPassword: hashedPassword,
           resetToken: null,
         });
       } else {

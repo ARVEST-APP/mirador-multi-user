@@ -23,7 +23,7 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async updateUser(userId: number, updateUserDto: UpdateUserDto) {
     try {
@@ -32,18 +32,27 @@ export class UsersService {
           'Admin field cannot be updated.',
         );
       }
-      const { oldPassword, confirmPassword, newPassword, ...newDto } =
+      const { password, newPassword, confirmPassword, ...newDto } =
         updateUserDto;
-      let dto = newDto;
+      let dto: UpdateUserDto = newDto;
       const userToUpdate = await this.userRepository.findOne({
         where: { id: userId },
       });
-      if (newPassword) {
+
+      if (newPassword || dto.mail) {
+        if (!password) {
+          throw new UnauthorizedException("Password is needed to modify this information.");
+        }
         const isMatch = await bcrypt.compare(
-          oldPassword,
+          password,
           userToUpdate.password,
         );
-        if (!isMatch && confirmPassword === newPassword) {
+        if (!isMatch) {
+          throw new UnauthorizedException("Incorrect password.");
+        }
+      }
+      if (newPassword) {
+        if (confirmPassword !== newPassword) {
           throw new UnauthorizedException("passwords don't match");
         }
         const salt = await bcrypt.genSalt();
@@ -52,23 +61,22 @@ export class UsersService {
       }
       return await this.userRepository.update(userId, dto);
     } catch (error) {
+      this.logger.error(error.message, error.stack);
       if (
         error instanceof UnauthorizedException ||
         error instanceof BadRequestException
       ) {
-        this.logger.error(error.message, error.stack);
         throw error;
       }
-      this.logger.error(error.message, error.stack);
       throw new UnauthorizedException(
-        'An error occurred while updating the user',
+        'An error occurred while updating the user: ' + error.message + ' ' + JSON.stringify(updateUserDto),
       );
     }
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create({ newPassword, ...dto }: CreateUserDto): Promise<User> {
     try {
-      if (dto.password.length < PASSWORD_MINIMUM_LENGTH) {
+      if (newPassword.length < PASSWORD_MINIMUM_LENGTH) {
         throw new BadRequestException(
           `password must be at least ${PASSWORD_MINIMUM_LENGTH} characters`,
         );

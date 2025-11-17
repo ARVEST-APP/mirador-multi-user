@@ -1,13 +1,9 @@
-import { UserResponse } from "../export";
+import i18n from "features/translation/i18n";
+import { RegisterFormData, UserResponse } from "../export";
 
-export type RegisterCredentialsDTO = {
-  name: string;
-  mail: string;
-  password: string;
-};
 
 export const register = async (
-  data: RegisterCredentialsDTO,
+  data: RegisterFormData,
 ): Promise<UserResponse> => {
   try {
     const response = await fetch(
@@ -19,7 +15,8 @@ export const register = async (
         },
         body: JSON.stringify({
           ...data,
-          preferredLanguage: navigator.language.split("-")[0],
+          password: data.newPassword,
+          preferredLanguage: i18n.language,
         }),
       },
     );

@@ -39,7 +39,7 @@ export class LinkUserGroupService {
     private readonly userService: UsersService,
     private readonly emailService: EmailServerService,
     private readonly metadataFormatGroupService: LinkMetadataFormatGroupService,
-  ) {}
+  ) { }
 
   async create(linkUserGroupDto: CreateLinkUserGroupDto) {
     try {
@@ -113,7 +113,7 @@ export class LinkUserGroupService {
     try {
       const userToSave = createUserDto;
       const salt = await bcrypt.genSalt();
-      userToSave.password = await bcrypt.hash(createUserDto.password, salt);
+      userToSave.password = await bcrypt.hash(createUserDto.newPassword, salt);
       const savedUser = await this.userService.create(userToSave);
 
       const userPersonalGroup = await this.groupService.create({

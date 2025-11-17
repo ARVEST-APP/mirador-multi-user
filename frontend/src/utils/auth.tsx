@@ -2,9 +2,9 @@ import storage from "./storage.ts";
 import { getUser } from "../features/auth/api/getUser.ts";
 import {
   login,
-  LoginCredentialsDTO,
+  LoginFormData,
   register,
-  RegisterCredentialsDTO,
+  RegisterFormData,
   User,
   UserResponse,
 } from "../features/auth/export.ts";
@@ -25,12 +25,12 @@ async function loadUser(): Promise<User | null> {
   return null;
 }
 
-async function loginFn(data: LoginCredentialsDTO) {
+async function loginFn(data: LoginFormData) {
   const response = await login(data);
   return await handleTokenResponse(response);
 }
 
-async function registerFn(data: RegisterCredentialsDTO) {
+async function registerFn(data: RegisterFormData) {
   const response = await register(data);
   const user = await handleTokenResponse(response);
   return user;
@@ -57,6 +57,6 @@ const authConfig = {
 export const { useUser, useLogin, useRegister, useLogout } = configureAuth<
   User | null,
   unknown,
-  LoginCredentialsDTO,
-  RegisterCredentialsDTO
+  LoginFormData,
+  RegisterFormData
 >(authConfig);

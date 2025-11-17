@@ -1,10 +1,11 @@
-import { UpdateUserDto } from '../types/types.ts';
+import { UpdateFormData } from '../types/types.ts';
 import storage from '../../../utils/storage.ts';
+import { t } from 'i18next';
 
-export const updateUser = async (updateUserDto: UpdateUserDto) => {
+export const updateUser = async (updateUserDto: UpdateFormData) => {
   const token = storage.getToken();
   try {
-    const response = await fetch(
+    await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/users/update`,
       {
         method: "PATCH",
@@ -14,11 +15,21 @@ export const updateUser = async (updateUserDto: UpdateUserDto) => {
         },
         body: JSON.stringify(updateUserDto),
       },
-    );
-    if (!response.ok) {
-      throw new Error("Failed to update user");
+
+    ).then(response => {
+      if (!response.ok) {
+        return response.json().then(errorJson => {
+          if (errorJson.statusCode === 401) {
+            throw new Error(t("unauthorizedModification"));
+          }
+          else
+            throw new Error(errorJson.message);
+        });
+      } else {
+        return response.json();
+      }
     }
-    return await response.json();
+    );
   } catch (error) {
     console.error(error);
     throw error;

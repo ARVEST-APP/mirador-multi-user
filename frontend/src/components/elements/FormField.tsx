@@ -1,11 +1,8 @@
-import React from "react";
-import { FieldError, /* SubmitErrorHandler, SubmitHandler, */ UseFormRegister } from "react-hook-form";
-import { IconButton, InputAdornment, TextField } from "@mui/material";
+import { FieldError, UseFormRegister } from "react-hook-form";
+import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-// import { RegisterCredentialsDTO } from "features/auth/api/register";
-// import { LoginFormData, RegisterFormData } from "features/auth/types/types";
-// import { LoginCredentialsDTO } from "features/auth/export";
+import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
+import { useState } from "react";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
@@ -14,12 +11,15 @@ interface FormFieldProps {
   placeholder: string;
   name: string;
   value?: string | number;
+  disabled?: boolean;
+  isLocked?: boolean;
   register: UseFormRegister<any>;
   required: boolean;
   error?: FieldError | undefined;
   helperText?: string;
   valueAsNumber?: boolean;
   endAdornment?: JSX.Element;
+  startAdornment?: JSX.Element;
   autocomplete?: string;
   handleKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   handleOnChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -59,18 +59,99 @@ export const ToggleVisibility = ({ isShowing, handleClickShow, hoverTextHiding =
   )
 }
 
-const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+interface PropsValidationIcons {
+  isDisabled?: boolean,
+  errorMessage?: string,
+}
+
+const ValidIcon = ({ isDisabled = true }: PropsValidationIcons) => {
+  return <DoneRounded color={isDisabled ? "disabled" : "success"} />
+}
+
+const InvalidIcon = ({ isDisabled = true }: PropsValidationIcons) => {
+  return <CloseRounded color={isDisabled ? "disabled" : "error"} />
+}
+
+interface PropsPasswordValidation {
+  isValid: boolean,
+  hint: string,
+  hasValue?: boolean
+}
+
+export const PasswordValidation = ({ isValid, hint, hasValue = true }: PropsPasswordValidation) => {
+  return (
+    <Grid container item alignItems={"center"}>
+      {isValid ? <ValidIcon isDisabled={!hasValue} /> : <InvalidIcon isDisabled={!hasValue} />}
+      <Typography variant="caption" className=".MuiFormHelperText-root" color={isValid ? "text.secondary" : "error"}>{hint}</Typography>
+    </Grid>
+  )
+}
+
+// Focus next input field
+// const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+//   if (event.key === "Enter") {
+//     event.preventDefault();
+//     var inputs = document.getElementsByTagName("input");
+//     for (var i = 0; i < inputs.length; i++) {
+//       if (inputs[i] == document.activeElement) {
+//         i + 1 < inputs.length && inputs[i + 1].focus();
+//         break;
+//       }
+//     }
+//   }
+// }
+
+// Go to the next focusable form element
+const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, submitFunc?: () => void) => {
   if (event.key === "Enter") {
     event.preventDefault();
-    var inputs = document.getElementsByTagName("input");
-    for (var i = 0; i < inputs.length; i++) {
-      if (inputs[i] == document.activeElement) {
-        i + 1 < inputs.length && inputs[i + 1].focus();
+
+    let formElements = document.forms[0].elements;
+
+    for (var i = 0; i < formElements.length; i++) {
+      if (formElements[i] == document.activeElement) {
+        // Get the next focusable element of the form
+        let j = 0;
+        do {
+          j++;
+          if (formElements[i + j] instanceof HTMLElement) {
+            switch (formElements[i + j].tagName.toUpperCase()) {
+              // Submit if the actual element is the last one of the list
+              case "BUTTON":
+                if (formElements[i + j] instanceof HTMLButtonElement && (formElements[i + j] as HTMLButtonElement).type == "submit") {
+                  (formElements[i + j] as HTMLElement).focus();
+                  if (submitFunc) submitFunc();
+                }
+                break;
+              case "INPUT":
+              case "SELECT":
+              case "TEXTAREA":
+                (formElements[i + j] as HTMLElement).focus();
+                break;
+              default:
+                break;
+            }
+          }
+        }
+        while (i + j < formElements.length && formElements[i + j] != document.activeElement)
         break;
       }
     }
   }
 }
+
+// export const handleEnterLastFormField = (event: React.KeyboardEvent<HTMLDivElement>, func: () => void) => {
+//   if (event.key === 'Enter') {
+//     const buttons: HTMLCollectionOf<HTMLButtonElement> = document.getElementsByTagName("button");
+//     for (let i = 0; i < buttons.length; i++) {
+//       if (buttons[i].type == "submit") {
+//         buttons[i].focus();
+//         func();
+//         break;
+//       }
+//     }
+//   }
+// };
 
 const FormTextField: React.FC<FormFieldProps> = ({
   type,
@@ -78,12 +159,15 @@ const FormTextField: React.FC<FormFieldProps> = ({
   placeholder,
   name,
   value,
+  disabled = false,
+  isLocked = false,
   register,
   required: isRequired,
   error,
   helperText,
   valueAsNumber,
   endAdornment: JSXendAdornment,
+  startAdornment: JSXstartAdornment,
   autocomplete,
   handleKeyDown = defaultHandleKeyDown,
   handleOnChange,
@@ -91,27 +175,70 @@ const FormTextField: React.FC<FormFieldProps> = ({
 
   const { t } = useTranslation();
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword((show) => !show)
+  };
+
+  const passwordEnAdornment: JSX.Element =
+    <ToggleVisibility
+      isShowing={showPassword}
+      handleClickShow={handleClickShowPassword}
+      hoverTextHiding={t('textHidding')}
+      hoverTextShowing={t('textDisplay')}
+    />
+
+  JSXendAdornment = JSXendAdornment == undefined && type == "password" ? passwordEnAdornment : JSXendAdornment;
+
+
+  interface PropsPlaceholder {
+    placeholder: string,
+    isLocked?: boolean,
+    disabled?: boolean
+  }
+  const Placeholder = ({ placeholder, isLocked, disabled }: PropsPlaceholder) => {
+    if (isLocked && disabled)
+      return (<Grid container alignContent={'center'}><LockOutlined color='disabled' fontSize='medium' /> {placeholder} </Grid>)
+    else if (isLocked)
+      return (<Grid container alignContent={'center'}><LockOpenOutlined color='disabled' fontSize='medium' /> {placeholder} </Grid>)
+    else
+      return placeholder;
+  }
+
   return (
-    <TextField
-      style={{ width: "100%" }}
-      required={isRequired}
-      type={type}
-      value={value}
-      aria-label={label}
-      inputProps={{
-        maxLength: 255,
-      }}
-      label={placeholder}
-      variant="outlined"
-      {...register(name, { valueAsNumber })}
-      error={!!error}
-      helperText={helperText || error?.message && t(error.message)}
-      InputProps={{
-        endAdornment: JSXendAdornment,
-        autoComplete: autocomplete
-      }}
-      onKeyDown={handleKeyDown}
-      onChange={handleOnChange}
-    />);
+    <Tooltip title={(label ? label : "") + (isLocked ? " - le mot de passe est nécessaire" : "")}>
+      <TextField
+        disabled={disabled}
+        style={{ width: "100%" }}
+        required={isRequired}
+        type={type === "password" ? (showPassword ? 'text' : 'password') : type}
+        value={value}
+        aria-label={label}
+        inputProps={{
+          maxLength: 255,
+        }}
+        label={<Placeholder placeholder={placeholder} isLocked={isLocked} disabled={disabled} />}
+        variant="outlined"
+        {...register(name, { valueAsNumber })}
+        error={!!error}
+        helperText={/* helperText || */
+          error?.message && error.message !== 'characterLimitForPassword' &&
+          // (error.message === 'characterLimitForPassword' ?
+          //   t('characterLimitForPassword', { PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH, PASSWORD_LENGTH: value?.toString() }) :
+          t(error.message)
+          // )
+          || helperText
+        }
+        InputProps={{
+          endAdornment: JSXendAdornment,
+          autoComplete: autocomplete,
+          startAdornment: JSXstartAdornment
+        }}
+        onKeyDown={handleKeyDown}
+        onChange={handleOnChange}
+      />
+    </Tooltip>
+  );
 };
 export default FormTextField;

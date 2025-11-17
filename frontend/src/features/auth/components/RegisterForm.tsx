@@ -1,15 +1,15 @@
 import { useForm } from "react-hook-form";
 import { Button, Grid, Snackbar } from "@mui/material";
-import FormTextField, { ToggleVisibility } from "components/elements/FormField.tsx";
-import { RegisterFormData, UserSchema } from "../types/types.ts";
+import FormTextField, { PasswordValidation } from "components/elements/FormField.tsx";
+import { RegisterFormData, RegisterSchema } from "../types/types.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegister } from "../../../utils/auth.tsx";
-import { RegisterCredentialsDTO } from "../api/register.ts";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { PASSWORD_MINIMUM_LENGTH } from "utils/utils.ts";
+import LanguageSelector from "features/translation/LanguageSelector.tsx";
 
 export const RegisterForm = () => {
   const navigate = useNavigate(); // Use hooks at the top level
@@ -22,9 +22,9 @@ export const RegisterForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(UserSchema),
-    mode: "onBlur",
-    reValidateMode: "onBlur",
+    resolver: zodResolver(RegisterSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     shouldFocusError: true,
     // delayError: 700
   });
@@ -32,7 +32,7 @@ export const RegisterForm = () => {
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
-  const onSubmit = async (data: RegisterCredentialsDTO) => {
+  const onSubmit = async (data: RegisterFormData) => {
     await createUser(data, {
       onSuccess: () => {
         toast.success(t("accountCreated"), { duration: 10000 });
@@ -51,24 +51,8 @@ export const RegisterForm = () => {
   };
 
   const handleKeyDownEnterButton = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    console.log({ event });
     event.key === 'Enter' && handleSubmit(onSubmit)
   }
-
-  const handleEnter = (/* event: React.KeyboardEvent<HTMLDivElement> */) => {
-    // console.log({ event });
-    // event.key === 'Enter' && event.preventDefault();
-  }
-
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmationPassword, setShowConfirmationPassword] = React.useState(false);
-
-  const handleClickShowPassword = () => {
-    console.log("in handleClickShowPassword");
-    console.log(showPassword);
-    setShowPassword((show) => !show)
-  };
-  const handleClickShowConfirmationPassword = () => setShowConfirmationPassword((show) => !show);
 
   const [passwordLenght, setPasswordLenght] = useState(0);
 
@@ -89,6 +73,9 @@ export const RegisterForm = () => {
         width={"fit-content"}
         maxWidth={"1000px"}
       >
+        <Grid item>
+          <LanguageSelector name="preferredLanguage" />
+        </Grid>
         <Grid item>
           <FormTextField
             label={t("mail")}
@@ -128,46 +115,45 @@ export const RegisterForm = () => {
         <Grid item>
           <FormTextField
             label={t("password")}
-            type={showPassword ? 'text' : 'password'}
+            type="password"
             placeholder={t("password")}
-            name="password"
+            name="newPassword"
             autocomplete="new-password"
             register={register}
             required={true}
-            error={errors.password} helperText={/* passwordLenght < PASSWORD_MINIMUM_LENGTH ? */ t('characterLimitForPassword', {
-              PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
-              PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
-            }) /* : "" */}
-            endAdornment={
-              <ToggleVisibility
-                isShowing={showPassword}
-                handleClickShow={handleClickShowPassword}
-                hoverTextHiding={t('textHidding')}
-                hoverTextShowing={t('textDisplay')}
-              />
-            }
+            error={errors.newPassword}
+            // helperText={
+            //   t('characterLimitForPassword', {
+            //     PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
+            //     PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
+            //   })
+            // }
             handleOnChange={updatePasswordLenght}
-
           />
         </Grid>
+        <PasswordValidation
+          isValid={errors.newPassword != undefined && (errors.newPassword.message === "characterLimitForPassword" || errors.newPassword.message === "requiredField") /* passwordLenght < PASSWORD_MINIMUM_LENGTH */ ? false : true}
+          hint={t('characterLimitForPassword', {
+            PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
+            PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
+          })}
+          hasValue={passwordLenght > 0 || errors.newPassword != undefined}
+        />
+        <PasswordValidation
+          isValid={passwordLenght > 0 || errors.newPassword === undefined}
+          hint={"Un joli mot de passe"}
+          hasValue={passwordLenght > 0 || errors.newPassword != undefined}
+        />
         <Grid item>
           <FormTextField
             label={t("confirmPassword")}
-            type={showConfirmationPassword ? 'text' : 'password'}
+            type="password"
             placeholder={t("confirmPassword")}
             name="confirmPassword"
             register={register}
             required={true}
             error={errors.confirmPassword}
-            endAdornment={
-              <ToggleVisibility
-                isShowing={showConfirmationPassword}
-                handleClickShow={handleClickShowConfirmationPassword}
-                hoverTextHiding={t('textHidding')}
-                hoverTextShowing={t('textDisplay')}
-              />
-            }
-            handleKeyDown={handleEnter}
+          // handleKeyDown={(event) => event.key === 'Enter' && handleSubmit(onSubmit)}
           />
         </Grid>
         <Grid item container>
