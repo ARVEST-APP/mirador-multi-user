@@ -21,6 +21,7 @@ Contributions, issues report and feedback are welcome.
 - `git clone git@github.com:ARVEST-APP/mirador-multi-user.git`
 - `cd mirador-multi-user`
 - `cp .env.dev.sample .env`
+- `cp traefik.preprod.yml traefik.yml #if in pre-prod` 
 - `nvm use`
 - `cd backend`
 - `npm install`
@@ -44,7 +45,8 @@ Now you can access :
 
 - `git clone git@github.com:ARVEST-APP/mirador-multi-user.git`
 - `cd mirador-multi-user`
-- `cp .env.prod.sample .env`. 
+- `cp .env.prod.sample .env`
+- `cp traefik.prod.yml traefik.yml` 
 
 VERY IMPORTANT : 
  
