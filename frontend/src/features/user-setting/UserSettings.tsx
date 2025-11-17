@@ -4,7 +4,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { ModalButton } from "../../components/elements/ModalButton.tsx";
 import toast from "react-hot-toast";
 import { User } from "../auth/types/types.ts";
-import { ProfileUpdateForm } from "./ProfileUpdateFom.tsx";
+import { ProfileUpdateForm } from "./ProfileUpdateForm.tsx";
 import { deleteAccount } from "../auth/api/deleteAccount.ts";
 import { useState } from "react";
 import { ModalConfirmDelete } from "../projects/components/ModalConfirmDelete.tsx";
@@ -79,7 +79,7 @@ export const UserSettings = ({ user }: IUserSettingsProps) => {
       </Grid>
 
       <Grid container item xs={12}>
-        <ProfileUpdateForm  />
+        <ProfileUpdateForm />
       </Grid>
       <Grid item spacing={2} sx={{ width: "100%" }}>
         <Button
