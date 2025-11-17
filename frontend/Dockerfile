@@ -4,6 +4,10 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
+COPY ./http_proxy.sh ./
+
+RUN chmod +x http_proxy.sh && ./http_proxy.sh
+
 RUN npm ci
 
 # Define build arguments

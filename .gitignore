@@ -10,5 +10,7 @@ upload
 #frontend/customAssets/
 #frontend/customAssets/*
 #/frontend/customAssets/*
+*Dockerfile.old
+traefik.yml
 app.log
 logs/
