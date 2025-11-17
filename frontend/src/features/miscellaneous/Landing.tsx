@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Grid, Typography } from "@mui/material";
 import { theme } from "../../assets/theme/mainTheme.ts";
 import { useTranslation } from "react-i18next";
-import { LandingFooter } from "../../../customAssets/landing-footer.tsx";
+// import { LandingFooter } from "../../../customAssets/landing-footer.tsx";
 
 export const Landing = () => {
   const navigate = useNavigate();
@@ -19,7 +19,8 @@ export const Landing = () => {
       direction="column"
       justifyContent="center"
       alignItems="center"
-      spacing={10}
+      //https://mui.com/material-ui/react-grid/
+      padding={{ xs: 2, sm: 6, md: 10 }}
       minHeight={"100vh"}
       sx={{
         backgroundImage: theme.palette.backgroundImage,
@@ -38,7 +39,8 @@ export const Landing = () => {
         item
         container
         justifyContent="center"
-        spacing={5}
+        spacing={{ xs: 2, sm: 5, md: 5 }}
+        padding={{ xs: 2, sm: 5, md: 5 }}
         alignItems="center"
       >
         <Grid item>

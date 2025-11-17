@@ -32,7 +32,8 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
         item
         container
         direction="row"
-        justifyContent="space-around"
+        justifyContent={"center"}
+        spacing={{ xs: 2, sm: 5, md: 15 }}
         alignItems="center"
         gap="20px"
         padding="40px"
@@ -48,12 +49,14 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
             <ArrowBackIcon />
           </NavLink>
         </Grid>
-        <Grid item>
+        <Grid item order={{ xs: 1, sm: 1, md: 0 }} textAlign={"center"} >
           <Typography variant="h2" component="h1">
             {title}
           </Typography>
         </Grid>
-        {rightButton ? rightButton : <Grid></Grid>}
+        <Grid item>
+          {rightButton ? rightButton : <Grid></Grid>}
+        </Grid>
       </Grid>
       <Grid
         item
