@@ -1,11 +1,14 @@
 # Base image
-FROM node:20-alpine AS builder
+FROM node:20-alpine 
 WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY ./src ./src
+COPY ./http_proxy.sh ./
+
+RUN chmod +x http_proxy.sh && ./http_proxy.sh
 
 RUN npm install
 
