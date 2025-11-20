@@ -29,7 +29,7 @@
   "backToHome": "Retour à la page d'accueil",
   "cancel": "ANNULER",
   "canvasRemoving": "Supprimer le canevas {{index}}",
-  "changeLanguage": "Changer de langage",
+  "changeLanguage": "Changer de langue",
   "characterLimitForPassword": "Le mot de passe doit contenir au moins {{PASSWORD_MINIMUM_LENGTH}} caractères. ({{PASSWORD_LENGTH}})",
   "configuration": "Configuration",
   "confirm-mail": "Confirmer l'e-mail",

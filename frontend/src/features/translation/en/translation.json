@@ -29,7 +29,7 @@
   "backToHome": "Back to home page",
   "cancel": "CANCEL",
   "canvasRemoving": "Remove canvas {{index}}",
-  "changeLanguage": "Change Language",
+  "changeLanguage": "Change language",
   "characterLimitForPassword": "Password must be at least {{PASSWORD_MINIMUM_LENGTH}} characters. ({{PASSWORD_LENGTH}})",
   "configuration": "Configuration",
   "confirm-mail": "Confirm e-mail",

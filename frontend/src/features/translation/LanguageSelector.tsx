@@ -7,6 +7,7 @@ import { SelectChangeEvent } from "@mui/material";
 import { availableLanguages } from "./i18n.ts";
 import { updatePreferredLanguage } from "./api/updatePreferredLanguage.ts";
 import { FieldError } from "react-hook-form";
+import { t } from "i18next";
 
 interface LanguageSelectorProps {
   userId?: number;
@@ -36,7 +37,7 @@ const LanguageSelector = ({ userId, name, error }: LanguageSelectorProps) => {
       value={language}
       onChange={handleChange}
       displayEmpty
-      inputProps={{ "aria-label": "Select language" }}
+      aria-label={t("changeLanguage")}
       error={!!error}
     >
       {availableLanguagesKeys.map(lang => (
