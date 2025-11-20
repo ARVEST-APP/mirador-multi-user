@@ -25,12 +25,12 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
       sx={{
         height: "max-content",
       }}
-      wrap="nowrap"
       gap="20px"
     >
       <Grid
         item
         container
+        flexWrap={{ sx: 'wrap', md: 'nowrap' }}
         direction="row"
         justifyContent={"center"}
         spacing={{ xs: 2, sm: 5, md: 15 }}
