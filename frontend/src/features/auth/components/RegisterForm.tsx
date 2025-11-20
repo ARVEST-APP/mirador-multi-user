@@ -17,17 +17,19 @@ export const RegisterForm = () => {
 
   //this is a hook from React-Query that allow us to use createUser(data) bellow
   const { mutateAsync: createUser } = useRegister();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormData>({
+  const form = useForm<RegisterFormData>({
     resolver: zodResolver(RegisterSchema),
     mode: "onTouched",
     reValidateMode: "onChange",
     shouldFocusError: true,
     // delayError: 700
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
@@ -78,19 +80,22 @@ export const RegisterForm = () => {
         </Grid>
         <Grid item>
           <FormTextField
+            form={form}
             label={t("mail")}
             type="mail"
             placeholder={t("mail")}
             name="mail"
             required={true}
             register={register}
-            error={errors.mail}
             autocomplete="email"
             helperText={t('emailSpelling')}
+            error={errors.mail}
+            onChangeValidation={true}
           />
         </Grid>
         <Grid item>
           <FormTextField
+            form={form}
             label={t("confirmMail")}
             type="confirmMail"
             placeholder={t("confirm-mail")}
@@ -98,6 +103,7 @@ export const RegisterForm = () => {
             register={register}
             required={true}
             error={errors.confirmMail}
+            onChangeValidation={true}
           />
         </Grid>
         <Grid item>
@@ -114,6 +120,7 @@ export const RegisterForm = () => {
         </Grid>
         <Grid item>
           <FormTextField
+            form={form}
             label={t("password")}
             type="password"
             placeholder={t("password")}
@@ -122,13 +129,14 @@ export const RegisterForm = () => {
             register={register}
             required={true}
             error={errors.newPassword}
+            onChangeValidation={true}
             // helperText={
             //   t('characterLimitForPassword', {
             //     PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
             //     PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
             //   })
             // }
-            handleOnChange={updatePasswordLenght}
+            handleOnChange={(e) => { updatePasswordLenght(e); }}
           />
         </Grid>
         <PasswordValidation
@@ -146,6 +154,7 @@ export const RegisterForm = () => {
         />
         <Grid item>
           <FormTextField
+            form={form}
             label={t("confirmPassword")}
             type="password"
             placeholder={t("confirmPassword")}
@@ -153,6 +162,7 @@ export const RegisterForm = () => {
             register={register}
             required={true}
             error={errors.confirmPassword}
+            onChangeValidation={true}
           // handleKeyDown={(event) => event.key === 'Enter' && handleSubmit(onSubmit)}
           />
         </Grid>

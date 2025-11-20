@@ -1,4 +1,4 @@
-import { FieldError, UseFormRegister } from "react-hook-form";
+import { FieldError, UseFormRegister, UseFormReturn } from "react-hook-form";
 import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
@@ -6,6 +6,7 @@ import { useState } from "react";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
+  form?: UseFormReturn<any, undefined>;
   type: string;
   label?: string;
   placeholder: string;
@@ -21,6 +22,7 @@ interface FormFieldProps {
   endAdornment?: JSX.Element;
   startAdornment?: JSX.Element;
   autocomplete?: string;
+  onChangeValidation?: boolean;
   handleKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   handleOnChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
@@ -154,11 +156,12 @@ const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, submit
 // };
 
 const FormTextField: React.FC<FormFieldProps> = ({
+  form,
   type,
   label,
   placeholder,
   name,
-  value,
+  value: initialValue,
   disabled = false,
   isLocked = false,
   register,
@@ -169,6 +172,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
   endAdornment: JSXendAdornment,
   startAdornment: JSXstartAdornment,
   autocomplete,
+  onChangeValidation,
   handleKeyDown = defaultHandleKeyDown,
   handleOnChange,
 }: FormFieldProps) => {
@@ -213,7 +217,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
         style={{ width: "100%" }}
         required={isRequired}
         type={type === "password" ? (showPassword ? 'text' : 'password') : type}
-        value={value}
+        value={initialValue}
         aria-label={label}
         inputProps={{
           maxLength: 255,
@@ -226,7 +230,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
           error?.message && error.message !== 'characterLimitForPassword' &&
           // (error.message === 'characterLimitForPassword' ?
           //   t('characterLimitForPassword', { PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH, PASSWORD_LENGTH: value?.toString() }) :
-          t(error.message)
+          (helperText ? helperText + ' - ' : '') + t(error.message)
           // )
           || helperText
         }
@@ -236,7 +240,13 @@ const FormTextField: React.FC<FormFieldProps> = ({
           startAdornment: JSXstartAdornment
         }}
         onKeyDown={handleKeyDown}
-        onChange={handleOnChange}
+        onChange={(e) => {
+          handleOnChange && handleOnChange(e);
+          if (onChangeValidation == true && form) {
+            form?.setValue(name, e.target.value);
+            form?.trigger(name);
+          }
+        }}
       />
     </Tooltip>
   );

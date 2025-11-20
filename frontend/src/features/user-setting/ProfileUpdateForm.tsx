@@ -29,11 +29,7 @@ export const ProfileUpdateForm = () => {
   });
 
   const { mutateAsync: updateUserMutation } = useUpdateUser();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<UpdateFormData>({
+  const form = useForm<UpdateFormData>({
     resolver: zodResolver(UpdateUserSchema),
     mode: "onTouched",
     // reValidateMode: "onBlur",
@@ -41,6 +37,11 @@ export const ProfileUpdateForm = () => {
     // delayError: 700
   });
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
   if (user != null && user.data != null) useEffect(() => {
     setFormValues((prev) => ({
@@ -148,6 +149,7 @@ export const ProfileUpdateForm = () => {
 
           <Grid item>
             <FormTextField
+              form={form}
               label={t("newPassword")}
               type="password"
               placeholder={t("newPassword")}
@@ -158,6 +160,7 @@ export const ProfileUpdateForm = () => {
               isLocked={true}
               disabled={formValues.password.length === 0}
               error={errors.newPassword}
+              onChangeValidation={true}
               helperText={
                 t('characterLimitForPassword', {
                   PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
@@ -170,6 +173,7 @@ export const ProfileUpdateForm = () => {
           {formValues.newPassword.length > 0 &&
             <Grid item>
               <FormTextField
+                form={form}
                 label={t("confirmPassword")}
                 type="password"
                 placeholder={t("confirmPassword")}
@@ -178,6 +182,7 @@ export const ProfileUpdateForm = () => {
                 register={register}
                 required={false}
                 error={errors.confirmPassword}
+                onChangeValidation={true}
               // handleKeyDown={(event) => event.key === 'Enter' && handleSubmit(onSubmit)}
               />
             </Grid>
