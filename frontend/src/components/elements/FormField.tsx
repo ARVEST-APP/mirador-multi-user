@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { PASSWORD_MINIMUM_LENGTH } from "utils/utils";
+import { t } from "i18next";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
@@ -84,8 +85,8 @@ interface PropsPasswordValidation {
 export const PasswordValidation = ({ isValid, hint, hasValue = true }: PropsPasswordValidation) => {
   return (
     <Grid container item alignItems={"center"}>
-      {isValid ? <ValidIcon isDisabled={!hasValue} /> : <InvalidIcon isDisabled={!hasValue} />}
-      <Typography variant="caption" className=".MuiFormHelperText-root" color={isValid ? "text.secondary" : "error"}>{hint}</Typography>
+      {isValid ? <ValidIcon isDisabled={!hasValue} aria-label={t(!hasValue ? "invalid" : "valid")} /> : <InvalidIcon isDisabled={!hasValue} aria-label={t("invalid")} />}
+      <Typography aria-label={t(isValid && hasValue ? "valid" : "invalid")} variant="caption" className=".MuiFormHelperText-root" color={isValid ? "text.secondary" : "error"}>{hint}</Typography>
     </Grid>
   )
 }
