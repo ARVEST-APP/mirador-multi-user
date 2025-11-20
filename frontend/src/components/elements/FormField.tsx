@@ -3,6 +3,7 @@ import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from
 import { useTranslation } from "react-i18next";
 import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
+import { PASSWORD_MINIMUM_LENGTH } from "utils/utils";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
@@ -88,6 +89,23 @@ export const PasswordValidation = ({ isValid, hint, hasValue = true }: PropsPass
     </Grid>
   )
 }
+
+interface PasswordCriteria {
+  name: string;
+  regexValidation: RegExp
+}
+
+export const PasswordCriterias = {
+  length: 'characterLimitForPassword',
+  number: 'passwordRequiresNumber',
+  specialChar: 'passwordRequiresSpecialChar'
+}
+
+export const PasswordCheck: PasswordCriteria[] = [
+  { name: PasswordCriterias.length, regexValidation: new RegExp(".{" + PASSWORD_MINIMUM_LENGTH + "}") },
+  { name: PasswordCriterias.number, regexValidation: /[0-9]/ },
+  { name: PasswordCriterias.specialChar, regexValidation: /[^A-Za-z0-9]/ }
+]
 
 // Focus next input field
 // const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -227,7 +245,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
         {...register(name, { valueAsNumber })}
         error={!!error}
         helperText={/* helperText || */
-          error?.message && error.message !== 'characterLimitForPassword' &&
+          error?.message && !error.message.includes(";") &&
           // (error.message === 'characterLimitForPassword' ?
           //   t('characterLimitForPassword', { PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH, PASSWORD_LENGTH: value?.toString() }) :
           (helperText ? helperText + ' - ' : '') + t(error.message)

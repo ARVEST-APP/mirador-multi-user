@@ -1,6 +1,6 @@
 import { z, ZodSchema, ZodType } from 'zod';
-import { PASSWORD_MINIMUM_LENGTH } from '../../../utils/utils.ts';
 import { UserGroup } from '../../user-group/types/types.ts';
+import { PasswordCheck } from 'components/elements/FormField.tsx';
 
 /// from backend
 enum Language {
@@ -104,9 +104,19 @@ const CreatePasswordCheck = z.object({
   confirmPassword: z.string()
 }).superRefine(({ newPassword, confirmPassword }, ctx: z.RefinementCtx) => {
   if (newPassword != '') {
-    if (newPassword.length < PASSWORD_MINIMUM_LENGTH) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `characterLimitForPassword`, path: ['newPassword'] })
+
+    // Password check
+    let message = '';
+    PasswordCheck.forEach(criteria => {
+      if (!criteria.regexValidation.test(newPassword))
+        message += ';' + criteria.name;
+    });
+
+    if (message !== '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: message, path: ['newPassword'] })
     }
+
+    // Confirmation password check
     if (confirmPassword == '') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `requiredField`, path: ['confirmPassword'] })
     }

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Button, Grid, Snackbar } from "@mui/material";
-import FormTextField, { PasswordValidation } from "components/elements/FormField.tsx";
+import FormTextField, { PasswordCriterias, PasswordValidation } from "components/elements/FormField.tsx";
 import { RegisterFormData, RegisterSchema } from "../types/types.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegister } from "../../../utils/auth.tsx";
@@ -139,19 +139,18 @@ export const RegisterForm = () => {
             handleOnChange={(e) => { updatePasswordLenght(e); }}
           />
         </Grid>
-        <PasswordValidation
-          isValid={errors.newPassword != undefined && (errors.newPassword.message === "characterLimitForPassword" || errors.newPassword.message === "requiredField") /* passwordLenght < PASSWORD_MINIMUM_LENGTH */ ? false : true}
-          hint={t('characterLimitForPassword', {
-            PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
-            PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
-          })}
-          hasValue={passwordLenght > 0 || errors.newPassword != undefined}
-        />
-        <PasswordValidation
-          isValid={passwordLenght > 0 || errors.newPassword === undefined}
-          hint={"Un joli mot de passe"}
-          hasValue={passwordLenght > 0 || errors.newPassword != undefined}
-        />
+        {Object.values(PasswordCriterias).map((criteria) => (
+          <PasswordValidation
+            isValid={errors.newPassword != undefined && errors.newPassword.message?.split(";").includes(criteria) ? false : true}
+            hint={criteria == PasswordCriterias.length ?
+              t(criteria, {
+                PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
+                PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
+              }) :
+              t(criteria)}
+            hasValue={passwordLenght > 0}
+          />
+        ))}
         <Grid item>
           <FormTextField
             form={form}

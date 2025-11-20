@@ -150,6 +150,8 @@
   "passwordMismatch": "Passwords don't match",
   "passwordResetError": "An error occurred while resetting the password",
   "passwordResetSuccess": "Your password has been successfully reset",
+  "passwordRequiresNumber": "Your password must contains at least one number.",
+  "passwordRequiresSpecialChar": "Your password must contains at least one special character.",
   "pathCopiedToClipboard": "Path copied to clipboard",
   "pathNotCopiedToClipboard": "Path not copied to clipboard",
   "placeholderProject": "My project",

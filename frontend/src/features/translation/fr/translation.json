@@ -152,6 +152,8 @@
   "passwordMismatch": "Les mots de passe ne correspondent pas.",
   "passwordResetError": "Une erreur est survenue lors de la réinitialisation du mot de passe.",
   "passwordResetSuccess": "Votre mot de passe a été réinitialisé avec succès.",
+  "passwordRequiresNumber": "Le mot de passe doit contenir au moins un chiffre.",
+  "passwordRequiresSpecialChar": "Le mot de passe doit contenir au moins un caractère spécial.",
   "pathCopiedToClipboard": "Lien copié dans le presse-papier.",
   "pathNotCopiedToClipboard": "Le lien n'a pas pu être copié dans le presse-papier.",
   "placeholderProject": "Mon projet",
