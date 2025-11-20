@@ -18,7 +18,7 @@ export const getUserManifests = async (
   const manifests = await response.json();
   return manifests.map((manifest: Manifest) => ({
     ...manifest,
-    created_at: dayjs(manifest.created_at),
-    updated_at: dayjs(manifest.updated_at),
+    created_at: dayjs(manifest.createdAt),
+    updated_at: dayjs(manifest.updatedAt),
   }));
 };

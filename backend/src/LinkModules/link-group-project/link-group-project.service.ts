@@ -46,7 +46,7 @@ export class LinkGroupProjectService {
     private readonly linkUserGroupService: LinkUserGroupService,
     private readonly metadataService: MetadataService,
     private readonly annotationPageService: AnnotationPageService,
-  ) {}
+  ) { }
 
   async create(createLinkGroupProjectDto: CreateLinkGroupProjectDto) {
     try {
@@ -128,14 +128,14 @@ export class LinkGroupProjectService {
 
       const {
         /* eslint-disable @typescript-eslint/no-unused-vars */
-        created_at,
+        createdAt,
         id,
         linkGroupProjectsIds,
         lockedAt,
         lockedByUserId,
         ownerId,
         snapShotHash,
-        updated_at,
+        updatedAt,
         /* eslint-enable @typescript-eslint/no-unused-vars */
         ...dataToDuplicate
       } = originalProject.project;

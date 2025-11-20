@@ -19,7 +19,7 @@ export enum mediaOrigin {
 }
 
 export type Media = {
-  created_at: Dayjs;
+  createdAt: Dayjs;
   description: string;
   hash: string;
   id: number;
@@ -28,7 +28,7 @@ export type Media = {
   origin: mediaOrigin;
   path?: string;
   rights: MediaGroupRights;
-  updated_at: Dayjs;
+  updatedAt: Dayjs;
   url: string;
   metadata: Record<string, string>;
   mediaTypes: MediaTypes;

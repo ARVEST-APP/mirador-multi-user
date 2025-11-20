@@ -19,7 +19,7 @@ export const IFrameGenerator = ({ snapshotUrl }: IframeGeneratorProps) => {
   const handleCopyToClipboard = async () => {
     if (iframeCode) {
       await navigator.clipboard.writeText(iframeCode);
-      toast.success(t("iframe_copied"));
+      toast.success(t("iframeCopied"));
     }
   };
 
@@ -34,7 +34,7 @@ export const IFrameGenerator = ({ snapshotUrl }: IframeGeneratorProps) => {
           startIcon={<CodeIcon />}
           onClick={handleIframeModal}
         >
-          {t("generate_iframe")}
+          {t("generateIframe")}
         </Button>
         <MMUModal
           openModal={openIframeModal}
@@ -60,7 +60,7 @@ export const IFrameGenerator = ({ snapshotUrl }: IframeGeneratorProps) => {
                 startIcon={<ContentCopyIcon />}
                 onClick={handleCopyToClipboard}
               >
-                {t("Copy_iframe_code")}
+                {t("copyIframeCode")}
               </Button>
             </Grid>
           </Grid>

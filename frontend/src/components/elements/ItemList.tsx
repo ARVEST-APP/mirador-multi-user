@@ -33,20 +33,20 @@ export const ItemList = <
   G extends { title: string },
   T extends { id: number; snapShotHash?: string, ownerId?: number, personalOwnerGroupId?: number },
 >({
-    items,
-    children,
-    removeItem,
-    searchBarLabel,
-    handleAddAccessListItem,
-    setItemToAdd,
-    handleGetOptionLabel,
-    handleSearchModalEditItem,
-    setSearchInput,
-    getGroupByOption,
-    item,
-    objectTypes,
-    ownerId,
-  }: IProjectUserGroup<G, T>): JSX.Element => {
+  items,
+  children,
+  removeItem,
+  searchBarLabel,
+  handleAddAccessListItem,
+  setItemToAdd,
+  handleGetOptionLabel,
+  handleSearchModalEditItem,
+  setSearchInput,
+  getGroupByOption,
+  item,
+  objectTypes,
+  ownerId,
+}: IProjectUserGroup<G, T>): JSX.Element => {
   const { t } = useTranslation();
 
   const isActionAllowedForListItem = (listItem: ListItem) => {
@@ -85,7 +85,7 @@ export const ItemList = <
         )}
         <Grid container item alignItems="center" spacing={2}>
           <Grid item>
-            <Typography variant="h5">{t('Permissions')}</Typography>
+            <Typography variant="h5">{t('permissions')}</Typography>
           </Grid>
           <Grid item>
             <MMUToolTip

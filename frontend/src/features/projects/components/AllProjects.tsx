@@ -65,7 +65,7 @@ interface AllProjectsProps {
   setUserProjects: (userProjects: Project[]) => void;
   userProjects: Project[];
   handleSetMiradorState: (state: IState | undefined) => void;
-  fetchMediaForUser: ()=>void;
+  fetchMediaForUser: () => void;
   medias: Media[];
 }
 
@@ -154,7 +154,7 @@ export const AllProjects = ({
         const Locked = await isProjectLocked(projectUser.id);
         if (Locked) {
           const userName = await getUserNameWithId(Locked);
-          return toast.error(t("errorProjectAlreadyOpen")+ userName);
+          return toast.error(t("errorProjectAlreadyOpen") + userName);
         }
         await handleLock({ projectId: projectUser.id, lock: true });
       } catch (error) {
@@ -233,8 +233,8 @@ export const AllProjects = ({
     projectId: number,
   ) => {
     const newRights = await updateAccessToProject(projectId, group.id, eventValue as ItemsRights);
-    if(newRights.error) {
-    toast.error(t('not_allowed_to_modify_rights'))
+    if (newRights.error) {
+      toast.error(t('notAllowedToModifyRights'))
     }
   };
 
@@ -288,7 +288,7 @@ export const AllProjects = ({
     share: string | undefined,
   ) => {
     if (share) {
-      toast.error(t("share-project-error-message"));
+      toast.error(t("shareProjectErrorMessage"));
       return;
     } else {
       await removeProjectFromList(projectId);

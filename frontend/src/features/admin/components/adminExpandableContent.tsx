@@ -41,7 +41,7 @@ export function AdminExpandableContent({ id, data }: RowProps) {
           onClick={handleValidateUser}
           disabled={data[5].value !== 'No' || data[4].value !== 'No'}
         >
-          {t('validate_user')}
+          {t('validateUser')}
         </Button>
       </Grid>
     </Grid>

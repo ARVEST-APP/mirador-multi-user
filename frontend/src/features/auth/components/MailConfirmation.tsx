@@ -28,7 +28,7 @@ export const MailConfirmation = () => {
       if (returnStatus === 201) {
         toastMessage = t("emailConfirmed");
       } else {
-        toastMessage = t("error_occurred");
+        toastMessage = t("errorOccurred");
       }
       storage.clearToken();
       if (returnStatus === 201) {
@@ -47,26 +47,26 @@ export const MailConfirmation = () => {
   }
 
   return (
-    <Layout title={t("mail-confirmation-title")}>
+    <Layout title={t("mailConfirmationTitle")}>
       <Grid item container flexDirection="column" justifyContent="center" alignItems="center">
         <Grid item>
           <FormControlLabel
             required
-            control={<Checkbox onChange={handleCheckBox}/>}
+            control={<Checkbox onChange={handleCheckBox} />}
             label={
-            <>
-                {t("accept_terms")}
+              <>
+                {t("acceptTerms")}
                 <Link component={RouterLink} to="/terms" target="_blank">
                   {t("terms")}
                 </Link>
-            </>
+              </>
             }
           />
         </Grid>
         <Grid item>
-        <Button variant="contained" color="primary" onClick={handleConfirmMail} disabled={!checked}>
-          {t("confirm-mail")}
-        </Button>
+          <Button variant="contained" color="primary" onClick={handleConfirmMail} disabled={!checked}>
+            {t("confirmMail")}
+          </Button>
         </Grid>
       </Grid>
     </Layout>

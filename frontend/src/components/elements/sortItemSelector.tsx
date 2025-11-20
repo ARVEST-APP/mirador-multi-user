@@ -17,11 +17,11 @@ export const SortItemSelector = <T extends Record<string, unknown>>({
 
   return (
     <FormControl fullWidth sx={{ minWidth: "150px" }}>
-      <InputLabel id="sort-selector-label">{t("sort_by")}</InputLabel>
+      <InputLabel id="sort-selector-label">{t("sortBy")}</InputLabel>
       <Select
         labelId="sort-selector-label"
         value={sortField}
-        label={t("sort_by")}
+        label={t("sortBy")}
         onChange={(e) => setSortField(e.target.value as keyof T)}
       >
         {fields.map((field) => (

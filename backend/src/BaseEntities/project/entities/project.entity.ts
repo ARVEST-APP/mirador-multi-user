@@ -50,7 +50,7 @@ export class Project {
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
-  created_at: Date;
+  createdAt: Date;
 
   @OneToMany(
     () => LinkGroupProject,
@@ -66,7 +66,7 @@ export class Project {
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
-  public updated_at: Date;
+  public updatedAt: Date;
 
   @ManyToOne(() => Tag)
   @JoinColumn({ name: 'tagId' })

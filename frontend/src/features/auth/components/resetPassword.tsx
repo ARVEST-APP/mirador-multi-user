@@ -53,7 +53,7 @@ export const ResetPassword = () => {
   };
   return (
     <Layout
-      title={t("reset-password-title")}
+      title={t("resetPasswordTitle")}
       rightButton={
         <Grid>
           <NavLink to="/auth/login">
@@ -65,13 +65,13 @@ export const ResetPassword = () => {
       <Container maxWidth="sm">
         <Box sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
           <Typography variant="h5" align="center" gutterBottom>
-            {t("reset-password")}
+            {t("resetPassword")}
           </Typography>
           <TextField
             inputProps={{
               maxLength: 255,
             }}
-            label={t("new-password")}
+            label={t("newPassword")}
             type="password"
             fullWidth
             margin="normal"
@@ -108,7 +108,7 @@ export const ResetPassword = () => {
             sx={{ mt: 3 }}
             onClick={handlePasswordReset}
           >
-            {t("reset-password")}
+            {t("resetPassword")}
           </Button>
         </Box>
       </Container>

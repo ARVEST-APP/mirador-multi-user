@@ -87,7 +87,7 @@ export const ProfileUpdateForm = () => {
       }}
     >
       <Typography variant="h5" sx={{ mb: 3 }}>
-        {t('UpdateProfile')}
+        {t('updateProfile')}
       </Typography>
 
       <form aria-label={t('formLabel')}>

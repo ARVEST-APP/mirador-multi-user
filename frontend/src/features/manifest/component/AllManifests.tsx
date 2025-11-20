@@ -84,13 +84,13 @@ interface IAllManifests {
 const caddyUrl = import.meta.env.VITE_CADDY_URL;
 
 export const AllManifests = ({
-                               manifests,
-                               fetchManifestForUser,
-                               userPersonalGroup,
-                               user,
-                               medias,
-                               fetchMediaForUser,
-                             }: IAllManifests) => {
+  manifests,
+  fetchManifestForUser,
+  userPersonalGroup,
+  user,
+  medias,
+  fetchMediaForUser,
+}: IAllManifests) => {
   const [createManifestIsOpen, setCreateManifestIsOpen] = useState(false);
   const [openModalManifestId, setOpenModalManifestId] = useState<number | null>(
     null,
@@ -227,7 +227,7 @@ export const AllManifests = ({
     try {
       for (const canvases of manifestCanvases) {
         if (canvases.media[0].value.length <= 0) {
-          return toast.error(t('no_media_error'));
+          return toast.error(t('noMediaError'));
         }
       }
       await createManifest({
@@ -332,7 +332,7 @@ export const AllManifests = ({
       eventValue as ManifestGroupRights,
     );
     if (newRights.error) {
-      toast.error(t('not_allowed_to_modify_rights'))
+      toast.error(t('notAllowedToModifyRights'))
     }
   };
   const handleSetOpenSidePanel = () => {
@@ -344,7 +344,7 @@ export const AllManifests = ({
     share: string | undefined,
   ) => Promise<void> = async (manifestId, share) => {
     if (share) {
-      toast.error(t('share-manifest-error-message'));
+      toast.error(t('shareManifestErrorMessage'));
       return;
     } else {
       await removeManifestFromList(manifestId);
@@ -451,7 +451,7 @@ export const AllManifests = ({
           {!manifests.length && !createManifestIsOpen && (
             <Grid container justifyContent={'center'}>
               <Typography variant="h6" component="h2">
-                {t('no_manifest_yet')}
+                {t('noManifestError')}
               </Typography>
             </Grid>
           )}
@@ -496,7 +496,7 @@ export const AllManifests = ({
                           </Grid>
                           <Grid item>
                             <ModalButton
-                              tooltipButton={t('OpenInMirador')}
+                              tooltipButton={t('openInMirador')}
                               onClickFunction={
                                 manifest.hash
                                   ? () =>

@@ -9,7 +9,7 @@ const caddyUrl = import.meta.env.VITE_CADDY_URL;
 interface IUseFetchThumbnailsUrlParams {
   item: {
     id: number;
-    created_at: Dayjs;
+    createdAt: Dayjs;
     mediaTypes?: MediaTypes;
     origin?: manifestOrigin | mediaOrigin;
     snapShotHash?: string;
@@ -73,7 +73,7 @@ export default function useFetchThumbnailsUrl({ item }: IUseFetchThumbnailsUrlPa
 }
 
 
-function isEmpty(obj:any) {
+function isEmpty(obj: any) {
   for (const prop in obj) {
     if (Object.hasOwn(obj, prop)) {
       return false;

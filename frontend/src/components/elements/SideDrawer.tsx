@@ -58,13 +58,13 @@ export const MENU_ELEMENT = {
 };
 
 export const SideDrawer = ({
-                             user,
-                             handleDisconnect,
-                             selectedProjectId,
-                             setSelectedProjectId,
-                             setViewer,
-                             viewer,
-                           }: ISideDrawerProps) => {
+  user,
+  handleDisconnect,
+  selectedProjectId,
+  setSelectedProjectId,
+  setViewer,
+  viewer,
+}: ISideDrawerProps) => {
   const [selectedContent, setSelectedContent] = useState(MENU_ELEMENT.PROJECTS);
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -142,7 +142,7 @@ export const SideDrawer = ({
 
     const sortedProjects = uniqueProjects.sort((a, b) => {
       return (
-        b.created_at!.toDate().getTime() - a.created_at!.toDate().getTime()
+        b.createdAt!.toDate().getTime() - a.createdAt!.toDate().getTime()
       );
     });
 

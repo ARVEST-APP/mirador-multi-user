@@ -139,8 +139,8 @@ export const AllGroups = ({
       rights: eventValue as ItemsRights,
       userId: userToUpdate!.user.id,
     });
-    if(newRights.error) {
-      toast.error(t('not_allowed_to_modify_rights'))
+    if (newRights.error) {
+      toast.error(t('notAllowedToModifyRights'))
     }
   };
 
@@ -173,7 +173,7 @@ export const AllGroups = ({
       id: userPersonalGroup.user.id,
       title: userPersonalGroup.user.name,
       rights: userPersonalGroup.rights,
-      personalOwnerGroupId:userPersonalGroup.personalOwnerGroupId,
+      personalOwnerGroupId: userPersonalGroup.personalOwnerGroupId,
     }));
   }, [userPersonalGroupList]);
 
@@ -260,7 +260,7 @@ export const AllGroups = ({
             )}
             {groups.length > 0 &&
               (currentPageData.length > 0 ? (
-                currentPageData.map((group:UserGroup) => (
+                currentPageData.map((group: UserGroup) => (
                   <Grid item key={group.id}>
                     <MMUCard
                       ownerId={group.ownerId}

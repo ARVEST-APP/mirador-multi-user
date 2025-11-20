@@ -17,7 +17,7 @@ export type LinkUserGroup = {
   rights: ItemsRights;
   user: User;
   user_group: UserGroup;
-  personalOwnerGroupId?:number
+  personalOwnerGroupId?: number
 };
 
 export type UserGroup = {
@@ -28,9 +28,9 @@ export type UserGroup = {
   type: UserGroupTypes;
   rights?: ItemsRights;
   thumbnailUrl?: string;
-  created_at: Dayjs;
+  createdAt: Dayjs;
   shared?: boolean;
-  updated_at:Dayjs;
+  updatedAt: Dayjs;
 };
 
 export type CreateGroupDto = {

@@ -42,7 +42,7 @@ export const RegisterForm = () => {
       },
       onError: (error: any) => {
         if (error.status === 409) {
-          return setMessage(t("user_already_exists"));
+          return setMessage(t("userAlreadyExists"));
         }
         setOpen(true);
         setMessage(error.toString());
@@ -98,7 +98,7 @@ export const RegisterForm = () => {
             form={form}
             label={t("confirmMail")}
             type="confirmMail"
-            placeholder={t("confirm-mail")}
+            placeholder={t("confirmMail")}
             name="confirmMail"
             register={register}
             required={true}

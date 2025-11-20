@@ -79,13 +79,13 @@ export const LoginForm = () => {
           </Grid>
           <Grid item>
             <Button
-              aria-label={t('forgot-password')}
+              aria-label={t('forgotPassword')}
               variant="text"
               color="primary"
               onClick={() => (window.location.href = '/forgot-password')}
               onKeyDown={(event) => handleKeyDownEnterButton(event, () => { (window.location.href = '/forgot-password') })}
             >
-              {t('forgot-password')}
+              {t('forgotPassword')}
             </Button>
           </Grid>
         </Grid>

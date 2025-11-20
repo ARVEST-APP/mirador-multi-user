@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import dayjs from "dayjs";
 
-export const UPDATED_AT = "updated_at";
+export const UPDATED_AT = "updatedAt";
 export const TITLE = "title";
 
 interface IUseCurrentPageData {

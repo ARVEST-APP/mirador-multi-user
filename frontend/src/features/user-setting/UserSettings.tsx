@@ -27,7 +27,7 @@ export const UserSettings = ({ user }: IUserSettingsProps) => {
     toast.success(t("tokenCopiedToast"));
   };
 
-  const handleDeleteAccount = async () => {
+  const handledeleteAccount = async () => {
     const responseDelete = await deleteAccount(user.id);
     if (responseDelete) {
       window.location.reload();
@@ -87,7 +87,7 @@ export const UserSettings = ({ user }: IUserSettingsProps) => {
           color="error"
           onClick={handleConfirmDeleteItemModal}
         >
-          {t("DeleteAccount")}
+          {t("deleteAccount")}
         </Button>
       </Grid>
       <MMUModal
@@ -96,7 +96,7 @@ export const UserSettings = ({ user }: IUserSettingsProps) => {
         setOpenModal={handleConfirmDeleteItemModal}
       >
         <ModalConfirmDelete
-          deleteItem={handleDeleteAccount}
+          deleteItem={handledeleteAccount}
           itemId={user.id}
           content={t("deleteConfirmation", {
             itemName: t("yourAccount"),

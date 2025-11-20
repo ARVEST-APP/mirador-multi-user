@@ -2,7 +2,7 @@ import { UserGroup } from '../../user-group/types/types.ts';
 import { Dayjs } from 'dayjs';
 
 export type Manifest = {
-  created_at: Dayjs;
+  createdAt: Dayjs;
   description: string;
   hash: string;
   id: number;
@@ -11,7 +11,7 @@ export type Manifest = {
   title: string;
   origin: manifestOrigin;
   path: string;
-  updated_at: Dayjs;
+  updatedAt: Dayjs;
   thumbnailUrl?: string;
   metadata: Record<string, string>;
   rights?: ManifestGroupRights;

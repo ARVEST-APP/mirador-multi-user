@@ -92,7 +92,7 @@ export const MetadataForm = <T extends { id: number }>({
   };
 
   const shouldDisplayField = (field: any): boolean => {
-    if (field.term.toLowerCase() === "date" && "created_at" in item)
+    if (field.term.toLowerCase() === "date" && "createdAt" in item)
       return false;
     if (field.term.toLowerCase() === "creator" && "ownerId" in item)
       return false;
@@ -107,7 +107,7 @@ export const MetadataForm = <T extends { id: number }>({
     link.click();
   };
 
-  useEffect(() => {}, [selectedMetadataFormat]);
+  useEffect(() => { }, [selectedMetadataFormat]);
   return (
     <>
       {loading ? (

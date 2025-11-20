@@ -84,7 +84,7 @@ export const MMUModalEdit = <
   T extends {
     id: number;
     origin?: manifestOrigin | mediaOrigin;
-    created_at: Dayjs;
+    createdAt: Dayjs;
     snapShotHash?: string;
     hash?: string;
     path?: string;
@@ -125,7 +125,7 @@ export const MMUModalEdit = <
   const [newItemDescription, setNewItemDescription] = useState(description);
   const [newItemThumbnailUrl, setNewItemThumbnailUrl] = useState(thumbnailUrl);
   const [newItemDate, setNewItemDate] = useState<Dayjs | null>(
-    dayjs(item.created_at),
+    dayjs(item.createdAt),
   );
   const [newItemMetadataCreator, setNewItemMetadataCreator] = useState(
     metadata?.creator ? metadata.creator : null,
@@ -421,8 +421,8 @@ export const MMUModalEdit = <
             <Tooltip
               title={
                 !jsonElementToEditInAdvancedEditor && objectTypes === ObjectTypes.PROJECT
-                  ? t("advanced_edit_disabled_project")
-                  : t("advanced_edit_disabled_manifest")
+                  ? t("advancedEditDisabledProject")
+                  : t("advancedEditDisabledManifest")
               }
               disableHoverListener={!!jsonElementToEditInAdvancedEditor}
             >

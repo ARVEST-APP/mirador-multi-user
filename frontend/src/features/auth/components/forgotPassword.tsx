@@ -41,7 +41,7 @@ const ForgotPassword = () => {
         <Box display="flex" justifyContent="center" alignItems="center">
           <Box sx={{ p: 4, borderRadius: 2, boxShadow: 3, width: '100%' }}>
             <Typography variant="h5" align="center" gutterBottom>
-              {t('forgot-password')}
+              {t('forgotPassword')}
             </Typography>
             <Typography variant="body2" align="center" sx={{ mb: 2 }}>
               {t('explanationPasswordReset')}

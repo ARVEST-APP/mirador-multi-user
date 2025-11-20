@@ -9,7 +9,7 @@ export const Register = () => {
 
   return (
     <Layout
-      title={t("account-creation-title")}
+      title={t("accountCreationTitle")}
       rightButton={
         <Grid>
           <NavLink to="/auth/login">

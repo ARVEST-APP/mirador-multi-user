@@ -12,12 +12,12 @@ export type Project = {
   description: string;
   thumbnailUrl?: string;
   metadata: Record<string, string>;
-  created_at: Dayjs;
+  createdAt: Dayjs;
   lockedByUserId: number;
   lockedAt: Date;
   share?: string;
   shared: boolean;
-  updated_at: Dayjs
+  updatedAt: Dayjs
 };
 
 export type ProjectGroup = {
@@ -42,7 +42,7 @@ export type ProjectGroupUpdateDto = {
   };
   rights?: ItemsRights;
   group?: UserGroup;
-  shared?:boolean;
+  shared?: boolean;
 };
 export type CreateProjectDto = {
   title: string;

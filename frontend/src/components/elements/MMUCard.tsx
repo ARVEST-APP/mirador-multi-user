@@ -83,7 +83,7 @@ interface IMMUCardProps<T, X> {
 
 const MMUCard = <
   T extends {
-    created_at: Dayjs;
+    createdAt: Dayjs;
     hash?: string;
     id: number;
     mediaTypes?: MediaTypes;
@@ -94,7 +94,7 @@ const MMUCard = <
     snapShotHash?: string;
     thumbnailUrl?: string;
     title?: string;
-    updated_at: Dayjs;
+    updatedAt: Dayjs;
   },
   X extends { id: number },
 >({
@@ -254,9 +254,9 @@ const MMUCard = <
             </Tooltip>
           </Grid>
           <Grid item xs={12} sm={1}>
-            {item.updated_at && (
+            {item.updatedAt && (
               <Tooltip
-                title={dayjs(item.updated_at)
+                title={dayjs(item.updatedAt)
                   .locale(i18n.language)
                   .format("LLLL")
                   .toString()}
@@ -270,7 +270,7 @@ const MMUCard = <
                     maxWidth: "200px",
                   }}
                 >
-                  {dayjs(item.updated_at)
+                  {dayjs(item.updatedAt)
                     .locale(i18n.language)
                     .format("ddd, D MMM")}
                 </Typography>
@@ -345,7 +345,7 @@ const MMUCard = <
           deleteItem={handleRemoveFromList!}
           itemId={item.id}
           share={item.share}
-          content={t("confirm_remove_item_from_list", {
+          content={t("confirmRemoveItemFromList", {
             itemName: item.title ? item.title : "item",
           })}
           buttonLabel={t("deleteDefinitely")}
