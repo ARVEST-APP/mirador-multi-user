@@ -18,27 +18,25 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
   return (
     <Grid
       container
-      direction="column"
-      justifyContent="space-around"
+      justifyContent="space-between"
       alignItems="center"
-      min-height="100vh"
-      sx={{
-        height: "max-content",
-      }}
+      height="100vh"
+      flexDirection={"column"}
+      flexWrap={"nowrap"}
       gap="20px"
     >
       <Grid
         item
         container
-        flexWrap={{ sx: 'wrap', md: 'nowrap' }}
+        flexWrap={{ sx: 'wrap', sm: 'nowrap' }}
         direction="row"
         justifyContent={"center"}
-        spacing={{ xs: 2, sm: 5, md: 15 }}
         alignItems="center"
         gap="20px"
-        padding="40px"
+        margin={{ xs: 3 }}
+        marginBlockStart="0px"
       >
-        <Grid item>
+        <Grid item padding={{ xs: 1, sm: 2, md: 3 }}>
           <NavLink
             aria-label={t("backToHome")}
             to="/"
@@ -49,12 +47,12 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
             <ArrowBackIcon />
           </NavLink>
         </Grid>
-        <Grid item order={{ xs: 1, sm: 1, md: 0 }} textAlign={"center"} >
+        <Grid item order={{ xs: -1, sm: 0, md: 0 }} textAlign={"center"} padding={{ xs: 1, sm: 2, md: 3 }}>
           <Typography variant="h2" component="h1">
             {title}
           </Typography>
         </Grid>
-        <Grid item>
+        <Grid item padding={{ xs: 1, sm: 2, md: 3 }}>
           {rightButton ? rightButton : <Grid></Grid>}
         </Grid>
       </Grid>
@@ -64,11 +62,11 @@ export const Layout = ({ children, title, rightButton }: LayoutProps) => {
         direction="column"
         justifyContent="center"
         alignItems="center"
-        minHeight="80vh"
+        padding={{ xs: 3, sm: 6 }}
       >
         {children}
       </Grid>
-      <Grid item container sx={{ width: "100%" }}>
+      <Grid item container paddingLeft={{ xs: 3, sm: 6 }} paddingBottom={{ xs: 2 }}>
         <TermsFooter />
       </Grid>
     </Grid>

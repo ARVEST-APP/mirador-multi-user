@@ -65,9 +65,9 @@ export const RegisterForm = () => {
         flexDirection="column"
         flexWrap={"wrap"}
         justifyContent="center"
-        spacing={2}
+        rowSpacing={2}
         width={"fit-content"}
-        maxWidth={"1000px"}
+        maxWidth={"500px"}
       >
         <Grid item>
           <LanguageSelector name="preferredLanguage" />
