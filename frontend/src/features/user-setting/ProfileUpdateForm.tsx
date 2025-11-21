@@ -10,11 +10,10 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../utils/auth.tsx';
 import { useUpdateUser } from '../../utils/customHooks/useUpdateProfile.ts';
-import { PASSWORD_MINIMUM_LENGTH } from '../../utils/utils.ts';
 import { UpdateFormData, UpdateUserSchema } from 'features/auth/export.ts';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import FormTextField from 'components/elements/FormField.tsx';
+import FormTextField, { PasswordValidations } from 'components/elements/FormField.tsx';
 
 export const ProfileUpdateForm = () => {
   const user = useUser();
@@ -55,12 +54,6 @@ export const ProfileUpdateForm = () => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
-
-  const [passwordLenght, setPasswordLenght] = useState(0);
-
-  const updatePasswordLenght = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setPasswordLenght(event.target.value.length);
-  }
 
   const onSubmit = async (data: UpdateFormData) => {
     await updateUserMutation(data, {
@@ -147,7 +140,7 @@ export const ProfileUpdateForm = () => {
             />
           </Grid>
 
-          <Grid item>
+          <Grid item container spacing="0px" width="fit-content">
             <FormTextField
               form={form}
               label={t("newPassword")}
@@ -161,15 +154,11 @@ export const ProfileUpdateForm = () => {
               disabled={formValues.password.length === 0}
               error={errors.newPassword}
               onChangeValidation={true}
-              helperText={
-                t('characterLimitForPassword', {
-                  PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
-                  PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
-                })}
-              handleOnChange={(e) => { updatePasswordLenght(e); handleChange(e) }}
-            // startAdornment={<LockOutlined color='disabled' fontSize='medium' />}
+              handleOnChange={handleChange}
             />
+            {<PasswordValidations form={form} name="newPassword" errors={errors} />}
           </Grid>
+
           {formValues.newPassword.length > 0 &&
             <Grid item>
               <FormTextField

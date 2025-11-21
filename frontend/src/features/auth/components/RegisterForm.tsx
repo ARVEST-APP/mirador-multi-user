@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Button, Grid, Snackbar } from "@mui/material";
-import FormTextField, { PasswordCriterias, PasswordValidation } from "components/elements/FormField.tsx";
+import FormTextField, { PasswordValidations } from "components/elements/FormField.tsx";
 import { RegisterFormData, RegisterSchema } from "../types/types.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegister } from "../../../utils/auth.tsx";
@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { PASSWORD_MINIMUM_LENGTH } from "utils/utils.ts";
 import LanguageSelector from "features/translation/LanguageSelector.tsx";
 
 export const RegisterForm = () => {
@@ -31,8 +30,8 @@ export const RegisterForm = () => {
     formState: { errors },
   } = form;
 
-  const [open, setOpen] = React.useState(false);
-  const [message, setMessage] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
   const onSubmit = async (data: RegisterFormData) => {
     await createUser(data, {
@@ -56,11 +55,6 @@ export const RegisterForm = () => {
     event.key === 'Enter' && handleSubmit(onSubmit)
   }
 
-  const [passwordLenght, setPasswordLenght] = useState(0);
-
-  const updatePasswordLenght = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setPasswordLenght(event.target.value.length);
-  }
 
   return (
     <form aria-label={t('formLabel')}>
@@ -118,7 +112,7 @@ export const RegisterForm = () => {
             error={errors.name}
           />
         </Grid>
-        <Grid item>
+        <Grid item container spacing="0px" width="fit-content">
           <FormTextField
             form={form}
             label={t("password")}
@@ -130,27 +124,9 @@ export const RegisterForm = () => {
             required={true}
             error={errors.newPassword}
             onChangeValidation={true}
-            // helperText={
-            //   t('characterLimitForPassword', {
-            //     PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
-            //     PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
-            //   })
-            // }
-            handleOnChange={(e) => { updatePasswordLenght(e); }}
           />
+          {<PasswordValidations form={form} name="newPassword" errors={errors} />}
         </Grid>
-        {Object.values(PasswordCriterias).map((criteria) => (
-          <PasswordValidation
-            isValid={errors.newPassword != undefined && errors.newPassword.message?.split(";").includes(criteria) ? false : true}
-            hint={criteria == PasswordCriterias.length ?
-              t(criteria, {
-                PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
-                PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
-              }) :
-              t(criteria)}
-            hasValue={passwordLenght > 0}
-          />
-        ))}
         <Grid item>
           <FormTextField
             form={form}

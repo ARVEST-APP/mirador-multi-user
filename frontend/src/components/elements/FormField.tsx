@@ -1,10 +1,11 @@
-import { FieldError, UseFormRegister, UseFormReturn } from "react-hook-form";
+import { FieldError, FieldErrors, UseFormRegister, UseFormReturn } from "react-hook-form";
 import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { PASSWORD_MINIMUM_LENGTH } from "utils/utils";
 import { t } from "i18next";
+import { RegisterFormData } from "features/auth/types/types";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
@@ -82,11 +83,11 @@ interface PropsPasswordValidation {
   hasValue?: boolean
 }
 
-export const PasswordValidation = ({ isValid, hint, hasValue = true }: PropsPasswordValidation) => {
+const PasswordValidation = ({ isValid, hint, hasValue = true }: PropsPasswordValidation) => {
   return (
-    <Grid container item alignItems={"center"}>
+    <Grid container item alignItems={"center"} wrap="nowrap" marginBlockStart="5px">
       {isValid ? <ValidIcon isDisabled={!hasValue} aria-label={t(!hasValue ? "invalid" : "valid")} /> : <InvalidIcon isDisabled={!hasValue} aria-label={t("invalid")} />}
-      <Typography aria-label={t(isValid && hasValue ? "valid" : "invalid")} variant="caption" className=".MuiFormHelperText-root" color={isValid ? "text.secondary" : "error"}>{hint}</Typography>
+      <Typography aria-label={t(isValid && hasValue ? "valid" : "invalid")} variant="caption" className=".MuiFormHelperText-root" color={isValid ? "text.secondary" : "error"} paddingLeft="8px">{hint}</Typography>
     </Grid>
   )
 }
@@ -96,7 +97,7 @@ interface PasswordCriteria {
   regexValidation: RegExp
 }
 
-export const PasswordCriterias = {
+const PasswordCriterias = {
   length: 'characterLimitForPassword',
   number: 'passwordRequiresNumber',
   specialChar: 'passwordRequiresSpecialChar'
@@ -107,6 +108,31 @@ export const PasswordCheck: PasswordCriteria[] = [
   { name: PasswordCriterias.number, regexValidation: /[0-9]/ },
   { name: PasswordCriterias.specialChar, regexValidation: /[^A-Za-z0-9]/ }
 ]
+
+interface PropsPasswordValidations {
+  form: UseFormReturn<any, undefined>,
+  name: string,
+  errors: FieldErrors<RegisterFormData>
+}
+
+export const PasswordValidations = ({ form, name, errors }: PropsPasswordValidations) => {
+  const passwordLenght: number = form.watch(name) ? form.watch(name).length : 0;
+  return (
+    Object.values(PasswordCriterias).map((criteria) => (
+      <PasswordValidation
+        key={criteria}
+        isValid={errors.newPassword != undefined && errors.newPassword.message?.split(";").includes(criteria) ? false : true}
+        hint={criteria == PasswordCriterias.length ?
+          t(criteria, {
+            PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
+            PASSWORD_LENGTH: passwordLenght.toString().padStart(2, '0'),
+          }) :
+          t(criteria)}
+        hasValue={passwordLenght > 0}
+      />
+    ))
+  )
+}
 
 // Focus next input field
 // const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
