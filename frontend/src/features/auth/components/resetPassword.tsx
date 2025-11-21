@@ -43,14 +43,15 @@ export const ResetPassword = () => {
       setError(t("invalidToken"));
     }
     if (token) {
-      const response = await resetPassword(token, password);
-      if (response) {
+      try {
+        await resetPassword(token, password);
         setSuccess(t("passwordResetSuccess"));
-      } else {
-        setSuccess(t("passwordResetError"));
+      } catch (error) {
+        setError(t("passwordResetError"))
       }
     }
   };
+
   return (
     <Layout
       title={t("resetPasswordTitle")}
