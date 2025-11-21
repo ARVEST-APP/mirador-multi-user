@@ -33,6 +33,7 @@ import {
   Manifest,
 } from '../../features/manifest/types/types';
 import { getUserManifests } from '../../features/manifest/api/getUserGroupManifests.ts';
+import Grid from '@mui/material/Grid';
 
 interface ISideDrawerProps {
   handleDisconnect: () => void;
@@ -317,7 +318,7 @@ export const SideDrawer = ({
   }, [userProjects, selectedProjectId]);
 
   return (
-    <>
+    <Grid container flexWrap={"nowrap"}>
       <MMUDrawer
         selectedContent={selectedContent}
         handleChangeContent={handleChangeContent}
@@ -353,6 +354,6 @@ export const SideDrawer = ({
         viewer={viewer}
         fetchProjects={fetchProjects}
       />
-    </>
+    </Grid>
   );
 };

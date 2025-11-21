@@ -39,36 +39,44 @@ export const UserSettings = ({ user }: IUserSettingsProps) => {
   };
 
   return (
-    <Grid container spacing={2} sx={{ padding: 2 }}>
+    <Grid container spacing={2} sx={{ padding: 2 }} /* maxWidth={"500px"} */>
       <Grid
         container
         item
-        flexDirection="row"
-        alignItems="center"
-        spacing={2}
-        sx={{ width: "100%" }}
+        flexDirection="column"
       >
-        <Grid item xs={10}>
-          <TextField
-            label={t("labelApiToken")}
-            disabled
-            fullWidth
-            helperText={t("helperTextApiToken")}
-            defaultValue={token}
-            inputProps={{
-              maxLength: 255,
-            }}
-          />
+        <Grid
+          container
+          item
+          flexDirection="row"
+          alignItems="center"
+          spacing={2}
+          sx={{ width: "100%" }}
+        >
+          <Grid item xs={10}>
+            <TextField
+              label={t("labelApiToken")}
+              disabled
+              fullWidth
+              // helperText={t("helperTextApiToken")}
+              defaultValue={token}
+              inputProps={{
+                maxLength: 255,
+              }}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <ModalButton
+              tooltipButton={t("tooltipButtonToken")}
+              onClickFunction={HandleCopyToClipBoard}
+              disabled={false}
+              icon={<ContentCopyIcon />}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={2}>
-          <ModalButton
-            tooltipButton={t("tooltipButtonToken")}
-            onClickFunction={HandleCopyToClipBoard}
-            disabled={false}
-            icon={<ContentCopyIcon />}
-          />
-        </Grid>
+        <Typography variant="caption" className=".MuiFormHelperText-root" color={"text.secondary"} paddingLeft="8px">{t("helperTextApiToken")}</Typography>
       </Grid>
+
       <Grid container item flexDirection="column" spacing={1}>
         <Grid item>
           <Typography variant="h5">{t("changeLanguage")}</Typography>

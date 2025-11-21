@@ -75,7 +75,7 @@ export const ProfileUpdateForm = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        width: '40%',
+        width: 'fit-content',
         maxWidth: '400px',
       }}
     >
