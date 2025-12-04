@@ -1,23 +1,19 @@
 import { useEffect, useState } from "react";
 import {
-  Alert,
-  Box,
-  Button,
-  Container,
   Grid,
-  TextField,
   Typography,
 } from "@mui/material";
 import { Layout } from "./layout.tsx";
 import { resetPassword } from "../api/resetPassword.ts";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { ResetPasswordFormData, ResetPasswordSchema } from "../export.ts";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Form, { FormTypes, getFormElements } from "components/elements/Form.tsx";
+import toast from "react-hot-toast";
 
 export const ResetPassword = () => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const { t } = useTranslation();
 
@@ -27,30 +23,30 @@ export const ResetPassword = () => {
     if (match) {
       setToken(match[1]);
     } else {
-      setError(t("errorToken"));
+      toast.error(t('errorToken'));
     }
   }, []);
 
-  const handlePasswordReset = async () => {
-    setError("");
-    setSuccess("");
-
-    if (password !== confirmPassword) {
-      setError(t("passwordMismatch"));
-      return;
-    }
+  const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      setError(t("invalidToken"));
+      toast.error(t('invalidToken'));
     }
     if (token) {
       try {
-        await resetPassword(token, password);
-        setSuccess(t("passwordResetSuccess"));
-      } catch (error) {
-        setError(t("passwordResetError"))
+        await resetPassword(token, data.newPassword);
+        toast.success(t("passwordResetSuccess"));
+      } catch {
+        toast.error(t('passwordResetError'));
       }
     }
   };
+
+  const resetPasswordForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(ResetPasswordSchema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
+  });
 
   return (
     <Layout
@@ -63,56 +59,13 @@ export const ResetPassword = () => {
         </Grid>
       }
     >
-      <Container maxWidth="sm">
-        <Box sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
-          <Typography variant="h5" align="center" gutterBottom>
-            {t("resetPassword")}
-          </Typography>
-          <TextField
-            inputProps={{
-              maxLength: 255,
-            }}
-            label={t("newPassword")}
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <TextField
-            inputProps={{
-              maxLength: 255,
-            }}
-            label="Confirm New Password"
-            type={t("password")}
-            fullWidth
-            margin="normal"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              {success}
-            </Alert>
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 3 }}
-            onClick={handlePasswordReset}
-          >
-            {t("resetPassword")}
-          </Button>
-        </Box>
-      </Container>
+      <Form
+        name={FormTypes.resetPassword}
+        form={resetPasswordForm}
+        elements={getFormElements(FormTypes.resetPassword, resetPasswordForm)}
+        instructions={"explanationPasswordReset"}
+        onSubmit={onSubmit}
+        submitButton="resetPassword" />
     </Layout>
   );
 };

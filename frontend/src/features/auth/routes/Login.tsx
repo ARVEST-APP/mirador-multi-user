@@ -13,7 +13,7 @@ export const Login = () => {
       rightButton={
         <Grid>
           <NavLink to="/auth/signin">
-            <Typography variant="button">{t("register")}</Typography>
+            <Typography variant="button">{t("create-account")}</Typography>
           </NavLink>
         </Grid>
       }

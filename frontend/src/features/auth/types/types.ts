@@ -67,6 +67,15 @@ export type LoginFormData = loginDto & {
   isImpersonate?: string;
 };
 
+export type ForgotPasswordFormData = {
+  mail: string
+}
+
+export type ResetPasswordFormData = {
+  newPassword: string,
+  confirmPassword: string
+}
+
 const Mail = z
   .string({
     required_error: 'requiredField',
@@ -145,3 +154,9 @@ export const UpdateUserSchema: ZodType<UpdateFormData> = z.intersection(CreatePa
   ...UserCredentials.shape,
   ...UserInformation.shape,
 }));
+
+export const ForgotPasswordSchema: ZodType<ForgotPasswordFormData> = z.object({
+  mail: Mail
+});
+
+export const ResetPasswordSchema: ZodType<ResetPasswordFormData> = CreatePasswordCheck;

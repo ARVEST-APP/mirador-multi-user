@@ -1,30 +1,38 @@
-import { useState } from 'react';
 import {
-  Box,
-  Button,
-  Container,
   Grid,
-  TextField,
   Typography,
 } from '@mui/material';
 import { Layout } from './layout.tsx';
 import { forgotPassword } from '../api/forgotPassword.ts';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Form, { FormTypes, getFormElements } from 'components/elements/Form.tsx';
+import { useForm } from 'react-hook-form';
+import { ForgotPasswordFormData, ForgotPasswordSchema } from '../types/types.ts';
+import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
   const { t } = useTranslation();
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error(t('errorMail'));
-      return;
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    try {
+      await forgotPassword(data.mail);
+      toast.success(t("successResetPassword"));
+    } catch (error) {
+      toast.error(t('passwordResetError'));
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
-    await forgotPassword(email);
-    toast.success(t('successResetPassword'));
   };
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(ForgotPasswordSchema),
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
+  });
 
   return (
     <Layout
@@ -37,39 +45,12 @@ const ForgotPassword = () => {
         </Grid>
       }
     >
-      <Container maxWidth="sm">
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <Box sx={{ p: 4, borderRadius: 2, boxShadow: 3, width: '100%' }}>
-            <Typography variant="h5" align="center" gutterBottom>
-              {t('forgotPassword')}
-            </Typography>
-            <Typography variant="body2" align="center" sx={{ mb: 2 }}>
-              {t('explanationPasswordReset')}
-            </Typography>
-            <TextField
-              inputProps={{
-                maxLength: 255,
-              }}
-              label={t('mail')}
-              type="email"
-              fullWidth
-              margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 3 }}
-              onClick={handleForgotPassword}
-            >
-              {t('submit')}
-            </Button>
-          </Box>
-        </Box>
-      </Container>
+      <Form
+        name={FormTypes.forgotPassword}
+        form={forgotPasswordForm}
+        elements={getFormElements(FormTypes.forgotPassword, forgotPasswordForm)}
+        instructions={"explanationPasswordReset"}
+        onSubmit={onSubmit} />
     </Layout>
   );
 };
