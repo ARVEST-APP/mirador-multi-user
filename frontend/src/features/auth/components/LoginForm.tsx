@@ -30,7 +30,7 @@ export const LoginForm = () => {
     shouldFocusError: true,
   });
 
-  const loginElements = getFormElements(FormTypes.login, loginForm)
+  const loginElements = getFormElements({ name: FormTypes.login, form: loginForm })
   return (
     <Form name={FormTypes.login} form={loginForm} elements={loginElements} onSubmit={onSubmit} submitButton="loginButton" forgotPasswordButton={true} />
   );

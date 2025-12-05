@@ -15,4 +15,4 @@ export const isFileSizeUnderLimit = (file: File) => {
 };
 
 // Note : you need to update also constant in backend/src/auth/utils.ts
-export const PASSWORD_MINIMUM_LENGTH = 16;
+export const PASSWORD_MINIMUM_LENGTH = 8;

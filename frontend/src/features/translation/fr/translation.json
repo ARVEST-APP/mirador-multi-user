@@ -148,6 +148,7 @@
   "password": "Mot de passe",
   "passwordIsEmpty": "Le mot de passe est vide.",
   "passwordMismatch": "Les mots de passe ne correspondent pas.",
+  "passwordRequiresLowerCaseAndUppercase": "Le mot de passe doit contenir au moins une lettre minuscule et majuscule.",
   "passwordRequiresNumber": "Le mot de passe doit contenir au moins un chiffre.",
   "passwordRequiresSpecialChar": "Le mot de passe doit contenir au moins un caractère spécial.",
   "passwordResetError": "Une erreur est survenue lors de la réinitialisation du mot de passe.",

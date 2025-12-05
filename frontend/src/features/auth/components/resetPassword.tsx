@@ -62,7 +62,7 @@ export const ResetPassword = () => {
       <Form
         name={FormTypes.resetPassword}
         form={resetPasswordForm}
-        elements={getFormElements(FormTypes.resetPassword, resetPasswordForm)}
+        elements={getFormElements({ name: FormTypes.resetPassword, form: resetPasswordForm })}
         onSubmit={onSubmit}
         submitButton="resetPassword" />
     </Layout>

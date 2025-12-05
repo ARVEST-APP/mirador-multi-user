@@ -7,7 +7,7 @@ interface IOpenModalProps {
   openModal: boolean;
   setOpenModal: (open: boolean) => void;
   children: ReactNode;
-  width: number;
+  width: any;
 }
 
 const style = {

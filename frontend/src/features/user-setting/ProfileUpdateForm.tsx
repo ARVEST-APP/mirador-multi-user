@@ -1,19 +1,16 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import {
   Box,
-  Button,
-  Grid,
   Typography,
 } from '@mui/material';
-
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useUser } from '../../utils/auth.tsx';
 import { useUpdateUser } from '../../utils/customHooks/useUpdateProfile.ts';
-import { UpdateFormData, UpdateUserSchema } from 'features/auth/export.ts';
+import { setInitialMail, UpdateFormData, UpdateUserSchema } from 'features/auth/export.ts';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import FormTextField, { PasswordValidations } from 'components/elements/FormField.tsx';
+import Form, { FormInputs, FormTypes, getFormElements, IConditions, IFormInputsValues } from 'components/elements/Form.tsx';
 
 export const ProfileUpdateForm = () => {
   const user = useUser();
@@ -22,38 +19,43 @@ export const ProfileUpdateForm = () => {
   const [formValues, setFormValues] = useState({
     name: '',
     mail: '',
-    password: '',
-    newPassword: '',
-    confirmPassword: '',
+    newPassword: ''
   });
 
   const { mutateAsync: updateUserMutation } = useUpdateUser();
-  const form = useForm<UpdateFormData>({
+  const updateProfileform = useForm<UpdateFormData>({
     resolver: zodResolver(UpdateUserSchema),
     mode: "onTouched",
-    // reValidateMode: "onBlur",
     shouldFocusError: true,
-    // delayError: 700
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = form;
+  const { reset } = updateProfileform;
 
-  if (user != null && user.data != null) useEffect(() => {
-    setFormValues((prev) => ({
-      ...prev,
-      name: user.data!.name,
-      mail: user.data!.mail,
-    }));
-  }, [user.data]);
+  if (user != null && user.data != null) {
+    useEffect(() => {
+      setInitialMail(user.data!.mail);
+      setFormValues((prev) => ({
+        ...prev,
+        name: user.data!.name,
+        mail: user.data!.mail,
+      }));
+      reset((prev) => ({
+        ...prev,
+        name: user.data!.name,
+        mail: user.data!.mail,
+      }))
+    }, [user.data, reset]);
+
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
+
+  useEffect(() => {
+    updateProfileform.trigger("password");
+  }, [formValues.mail, formValues.newPassword])
 
   const onSubmit = async (data: UpdateFormData) => {
     await updateUserMutation(data, {
@@ -66,8 +68,22 @@ export const ProfileUpdateForm = () => {
     });
   };
 
-  const handleKeyDownEnterButton = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    event.key === 'Enter' && handleSubmit(onSubmit)
+  let values: IFormInputsValues = {};
+
+  Object.entries(formValues).forEach(([key, value]) => {
+    values[key] = value;
+  });
+
+  const conditions: IConditions = {
+    [FormInputs.confirmPassword]:
+    {
+      visible: formValues?.newPassword ? formValues.newPassword.length > 0 : false
+    },
+    [FormInputs.password]:
+    {
+      required: (formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false,
+      disabled: !((formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false),
+    }
   }
 
   return (
@@ -83,114 +99,13 @@ export const ProfileUpdateForm = () => {
         {t('updateProfile')}
       </Typography>
 
-      <form aria-label={t('formLabel')}>
-        <Grid
-          container
-          display={"flex"}
-          flexDirection="column"
-          flexWrap={"wrap"}
-          justifyContent="center"
-          spacing={2}
-          width={"fit-content"}
-          maxWidth={"1000px"}
-        >
-          <Grid item>
-            <FormTextField
-              label={t("password")}
-              type="password"
-              placeholder={t("password")}
-              name="password"
-              // disabled={formValues.newPassword.length === 0 && formValues.mail === user.data!.mail}
-              register={register}
-              required={false}
-              error={errors.password}
-              // handleOnChange={updatePasswordLenght}
-              handleOnChange={handleChange}
-            />
-          </Grid>
-          <Grid item>
-            <FormTextField
-              label={t("mail")}
-              type="mail"
-              placeholder={t("mail")}
-              name="mail"
-              value={formValues.mail}
-              isLocked={true}
-              disabled={formValues.password.length === 0}
-              handleOnChange={handleChange}
-              required={false}
-              register={register}
-              error={errors.mail}
-              autocomplete="email"
-            // startAdornment={<LockOutlined color='disabled' fontSize='medium' />}
-            />
-          </Grid>
-          <Grid item>
-            <FormTextField
-              label={t("name")}
-              type="text"
-              placeholder={t("name")}
-              name="name"
-              value={formValues.name}
-              handleOnChange={handleChange}
-              autocomplete="username"
-              required={false}
-              register={register}
-              error={errors.name}
-            />
-          </Grid>
-
-          <Grid item container spacing="0px" width="fit-content">
-            <FormTextField
-              form={form}
-              label={t("newPassword")}
-              type="password"
-              placeholder={t("newPassword")}
-              name="newPassword"
-              autocomplete="new-password"
-              register={register}
-              required={false}
-              isLocked={true}
-              disabled={formValues.password.length === 0}
-              error={errors.newPassword}
-              onChangeValidation={true}
-              handleOnChange={handleChange}
-            />
-            {<PasswordValidations form={form} name="newPassword" errors={errors} />}
-          </Grid>
-
-          {formValues.newPassword.length > 0 &&
-            <Grid item>
-              <FormTextField
-                form={form}
-                label={t("confirmPassword")}
-                type="password"
-                placeholder={t("confirmPassword")}
-                name="confirmPassword"
-                autocomplete="new-password"
-                register={register}
-                required={false}
-                error={errors.confirmPassword}
-                onChangeValidation={true}
-              // handleKeyDown={(event) => event.key === 'Enter' && handleSubmit(onSubmit)}
-              />
-            </Grid>
-          }
-
-          <Grid item container>
-            <Button
-              type="submit"
-              aria-label={t("submitForm")}
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit(onSubmit)}
-              onKeyDown={handleKeyDownEnterButton}
-            >
-              {t("saveChanges")}
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+      <Form
+        name={FormTypes.updateProfile}
+        form={updateProfileform}
+        elements={getFormElements({ name: FormTypes.updateProfile, form: updateProfileform,/*  formValues, */ handleOnChange: handleChange })}
+        values={values}
+        onSubmit={onSubmit}
+        conditions={conditions} submitButton="saveChanges" forgotPasswordButton={true} />
     </Box>
   );
 };

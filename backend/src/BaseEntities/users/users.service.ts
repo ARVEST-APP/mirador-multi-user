@@ -39,7 +39,7 @@ export class UsersService {
         where: { id: userId },
       });
 
-      if (newPassword || dto.mail) {
+      if (newPassword || dto.mail && dto.mail !== userToUpdate.mail) {
         if (!password) {
           throw new UnauthorizedException("Password is needed to modify this information.");
         }

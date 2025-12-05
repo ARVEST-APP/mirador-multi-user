@@ -37,7 +37,7 @@ export const RegisterForm = () => {
     reValidateMode: "onChange",
     shouldFocusError: true,
   });
-  const registerElements = getFormElements(FormTypes.register, registerForm)
+  const registerElements = getFormElements({ name: FormTypes.register, form: registerForm })
   return (
     <Form name={FormTypes.register} form={registerForm} elements={registerElements} onSubmit={onSubmit} submitButton="register" />
   );

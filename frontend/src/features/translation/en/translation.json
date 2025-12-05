@@ -145,6 +145,7 @@
   "password": "Password",
   "passwordIsEmpty": "Password is empty",
   "passwordMismatch": "Passwords don't match",
+  "passwordRequiresLowerCaseAndUppercase": "Your password must contains at least one lowercase and one uppercase letter.",
   "passwordRequiresNumber": "Your password must contains at least one number.",
   "passwordRequiresSpecialChar": "Your password must contains at least one special character.",
   "passwordResetError": "An error occurred while resetting the password",

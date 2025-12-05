@@ -1,11 +1,12 @@
 import { FieldError, FieldErrors, UseFormRegister, UseFormReturn } from "react-hook-form";
-import { Grid, IconButton, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
+import { Grid, IconButton, InputAdornment, SvgIcon, SvgIconTypeMap, TextField, Tooltip, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { CloseRounded, DoneRounded, LockOpenOutlined, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
+import { CloseRounded, DoneRounded, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { PASSWORD_MINIMUM_LENGTH } from "utils/utils";
 import { t } from "i18next";
 import { RegisterFormData } from "features/auth/types/types";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
 
 // Define the interface for the FormField props
 interface FormFieldProps {
@@ -13,6 +14,7 @@ interface FormFieldProps {
   type: string;
   label?: string;
   placeholder: string;
+  placeholderIcon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; },
   name: string;
   value?: string | number;
   disabled?: boolean;
@@ -100,11 +102,13 @@ interface PasswordCriteria {
 const PasswordCriterias = {
   length: 'characterLimitForPassword',
   number: 'passwordRequiresNumber',
+  case: 'passwordRequiresLowerCaseAndUppercase',
   specialChar: 'passwordRequiresSpecialChar'
 }
 
 export const PasswordCheck: PasswordCriteria[] = [
   { name: PasswordCriterias.length, regexValidation: new RegExp(".{" + PASSWORD_MINIMUM_LENGTH + "}") },
+  { name: PasswordCriterias.case, regexValidation: /(?=.*[A-Z])(?=.*[a-z])/ },
   { name: PasswordCriterias.number, regexValidation: /[0-9]/ },
   { name: PasswordCriterias.specialChar, regexValidation: /[^A-Za-z0-9]/ }
 ]
@@ -134,19 +138,20 @@ export const PasswordValidations = ({ form, name, errors }: PropsPasswordValidat
   )
 }
 
-// Focus next input field
-// const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-//   if (event.key === "Enter") {
-//     event.preventDefault();
-//     var inputs = document.getElementsByTagName("input");
-//     for (var i = 0; i < inputs.length; i++) {
-//       if (inputs[i] == document.activeElement) {
-//         i + 1 < inputs.length && inputs[i + 1].focus();
-//         break;
-//       }
-//     }
-//   }
-// }
+interface PropsIconedPlaceholder {
+  placeholder: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }
+  gap?: string
+}
+
+const IconedPlaceholder = ({ placeholder, icon, gap = "3px" }: PropsIconedPlaceholder) => {
+  return (
+    <Grid container alignItems={'center'} gap={gap} >
+      <SvgIcon color="disabled" fontSize='medium' component={icon} />
+      {placeholder}
+    </Grid>
+  )
+}
 
 // Go to the next focusable form element
 const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, submitFunc?: () => void) => {
@@ -205,6 +210,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
   type,
   label,
   placeholder,
+  placeholderIcon,
   name,
   value: initialValue,
   disabled = false,
@@ -240,24 +246,10 @@ const FormTextField: React.FC<FormFieldProps> = ({
 
   JSXendAdornment = JSXendAdornment == undefined && type == "password" ? passwordEnAdornment : JSXendAdornment;
 
-
-  interface PropsPlaceholder {
-    placeholder: string,
-    isLocked?: boolean,
-    disabled?: boolean
-  }
-  const Placeholder = ({ placeholder, isLocked, disabled }: PropsPlaceholder) => {
-    if (isLocked && disabled)
-      return (<Grid container alignContent={'center'}><LockOutlined color='disabled' fontSize='medium' /> {placeholder} </Grid>)
-    else if (isLocked)
-      return (<Grid container alignContent={'center'}><LockOpenOutlined color='disabled' fontSize='medium' /> {placeholder} </Grid>)
-    else
-      return placeholder;
-  }
-
   return (
     <Tooltip title={(label ? label : "") + (isLocked ? " - le mot de passe est nécessaire" : "")}>
       <TextField
+
         disabled={disabled}
         style={{ width: "100%" }}
         required={isRequired}
@@ -267,7 +259,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
         inputProps={{
           maxLength: 255,
         }}
-        label={<Placeholder placeholder={placeholder} isLocked={isLocked} disabled={disabled} />}
+        label={placeholderIcon ? <IconedPlaceholder icon={placeholderIcon} placeholder={placeholder} /> : placeholder}
         variant="outlined"
         {...register(name, { valueAsNumber })}
         error={!!error}
