@@ -21,7 +21,7 @@
   "cancel": "CANCEL",
   "canvasRemoving": "Remove canvas {{index}}",
   "changeLanguage": "Change language",
-  "characterLimitForPassword": "Password must be at least {{PASSWORD_MINIMUM_LENGTH}} characters. ({{PASSWORD_LENGTH}})",
+  "characterLimitForPassword": "Your password must be at least {{PASSWORD_MINIMUM_LENGTH}} characters. ({{PASSWORD_LENGTH}})",
   "charactersNotAllowed": "Special characters are not allowed",
   "configuration": "Configuration",
   "confirmRemoveItemFromList": "Are you sure you want to remove <b>{{itemName}}</b> from your list ? This action is <b>irreversible</b>.",
