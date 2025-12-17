@@ -4,7 +4,8 @@ import { LoginFormData, LoginSchema } from '../types/types.ts';
 import { useLogin } from '../../../utils/auth.tsx';
 import { useNavigate } from 'react-router-dom';
 
-import Form, { FormTypes, getFormElements } from 'components/elements/Form.tsx';
+import Form, { FormTypes } from 'components/elements/Form.tsx';
+import { AutomatedFormTextField, CommunFieldsName } from 'components/elements/FormField.tsx';
 import toast from 'react-hot-toast';
 
 export const LoginForm = () => {
@@ -30,8 +31,11 @@ export const LoginForm = () => {
     shouldFocusError: true,
   });
 
-  const loginElements = getFormElements({ name: FormTypes.login, form: loginForm })
   return (
-    <Form name={FormTypes.login} form={loginForm} elements={loginElements} onSubmit={onSubmit} submitButton="loginButton" forgotPasswordButton={true} />
+    <Form name={FormTypes.login} form={loginForm} onSubmit={onSubmit} submitButtonText="loginButton"
+      formElements={[
+        new AutomatedFormTextField(CommunFieldsName.mail),
+        new AutomatedFormTextField(CommunFieldsName.password)
+      ]} />
   );
 };

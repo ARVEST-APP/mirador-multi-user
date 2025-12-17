@@ -144,6 +144,7 @@
   "openProjectTooltip": "Open Project",
   "password": "Password",
   "passwordIsEmpty": "Password is empty",
+  "passwordNeeded": "password is required",
   "passwordMismatch": "Passwords don't match",
   "passwordRequiresLowerCaseAndUppercase": "Your password must contains at least one lowercase and one uppercase letter.",
   "passwordRequiresNumber": "Your password must contains at least one number.",

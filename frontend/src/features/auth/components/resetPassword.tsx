@@ -10,7 +10,8 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { ResetPasswordFormData, ResetPasswordSchema } from "../export.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Form, { FormTypes, getFormElements } from "components/elements/Form.tsx";
+import Form, { FormTypes } from "components/elements/Form.tsx";
+import { AutomatedFormTextField, CommunFieldsName } from 'components/elements/FormField.tsx';
 import toast from "react-hot-toast";
 
 export const ResetPassword = () => {
@@ -62,9 +63,13 @@ export const ResetPassword = () => {
       <Form
         name={FormTypes.resetPassword}
         form={resetPasswordForm}
-        elements={getFormElements({ name: FormTypes.resetPassword, form: resetPasswordForm })}
         onSubmit={onSubmit}
-        submitButton="resetPassword" />
+        submitButtonText="resetPassword"
+        formElements={[
+          new AutomatedFormTextField(CommunFieldsName.newPassword),
+          new AutomatedFormTextField(CommunFieldsName.confirmPassword)
+        ]}
+      />
     </Layout>
   );
 };

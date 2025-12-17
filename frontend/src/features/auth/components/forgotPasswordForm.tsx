@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import Form, { FormInputs, FormTypes, getFormElements, IFormInputsValues } from 'components/elements/Form.tsx';
+import Form, { FormTypes } from 'components/elements/Form.tsx';
 import { useForm } from 'react-hook-form';
 import { ForgotPasswordFormData, ForgotPasswordSchema } from '../types/types.ts';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 import { forgotPassword } from '../api/forgotPassword.ts';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { AutomatedFormTextField, CommunFieldsName, defaultFormFields } from 'components/elements/FormField.tsx';
 
 interface PropsForgotPasswordForm {
     mail?: string,
@@ -44,21 +45,16 @@ const ForgotPasswordForm = ({ mail }: PropsForgotPasswordForm) => {
 
     useEffect(() => {
         setEmail(mail);
-        reset(values);
     }, [mail, reset]);
-
-    const values: IFormInputsValues = {
-        [FormInputs.mail]: email
-    }
 
     return (
         <Form
             name={FormTypes.forgotPassword}
             form={forgotPasswordForm}
-            elements={getFormElements({ name: FormTypes.forgotPassword, form: forgotPasswordForm, handleOnChange: handleChange })}
-            values={values}
             instructions={"explanationPasswordReset"}
-            onSubmit={onSubmit} />
+            onSubmit={onSubmit}
+            formElements={[new AutomatedFormTextField(CommunFieldsName.mail, { ...defaultFormFields.mail, value: email, handleOnChange: handleChange })]}
+        />
     );
 };
 

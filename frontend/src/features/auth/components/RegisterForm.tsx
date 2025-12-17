@@ -5,7 +5,9 @@ import { useRegister } from "../../../utils/auth.tsx";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import Form, { FormTypes, getFormElements } from "components/elements/Form.tsx";
+import Form, { FormTypes } from "components/elements/Form.tsx";
+import { AutomatedFormTextField, CommunFieldsName } from 'components/elements/FormField.tsx';
+import LanguageSelector from "features/translation/LanguageSelector.tsx";
 
 export const RegisterForm = () => {
   const navigate = useNavigate(); // Use hooks at the top level
@@ -37,9 +39,23 @@ export const RegisterForm = () => {
     reValidateMode: "onChange",
     shouldFocusError: true,
   });
-  const registerElements = getFormElements({ name: FormTypes.register, form: registerForm })
-  return (
-    <Form name={FormTypes.register} form={registerForm} elements={registerElements} onSubmit={onSubmit} submitButton="register" />
-  );
 
+  const registerElementName = [
+    CommunFieldsName.newMail,
+    CommunFieldsName.confirmMail,
+    CommunFieldsName.name,
+    CommunFieldsName.newPassword,
+    CommunFieldsName.confirmPassword,
+  ]
+  const registerPartialFields = registerElementName.map((input) => {
+    return (new AutomatedFormTextField(input))
+  });
+  const children: (JSX.Element | AutomatedFormTextField)[] = [
+    <LanguageSelector name="preferredLanguage" />,
+    ...registerPartialFields,
+  ]
+
+  return (
+    <Form name={FormTypes.register} form={registerForm} onSubmit={onSubmit} submitButtonText="register" formElements={children} />
+  );
 };

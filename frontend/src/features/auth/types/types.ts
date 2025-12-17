@@ -1,6 +1,7 @@
 import { z, ZodSchema, ZodType } from 'zod';
 import { UserGroup } from '../../user-group/types/types.ts';
 import { PasswordCheck } from 'components/elements/FormField.tsx';
+import { FieldValues } from 'react-hook-form';
 
 /// from backend
 export enum Language {
@@ -53,26 +54,26 @@ export type UserResponse = {
   user: User;
 };
 
-export type UpdateFormData = Omit<UpdateUserDto, "mail" | "name"> & {
+export type UpdateFormData = FieldValues & Omit<UpdateUserDto, "mail" | "name"> & {
   mail: string;
   name: string;
 };
 
-export type RegisterFormData = Omit<CreateUserDto, "preferredLanguage" | "password"> & {
+export type RegisterFormData = FieldValues & Omit<CreateUserDto, "preferredLanguage" | "password"> & {
   // password?: string;
   confirmMail: string;
   confirmPassword: string;
 };
 
-export type LoginFormData = loginDto & {
+export type LoginFormData = FieldValues & loginDto & {
   isImpersonate?: string;
 };
 
-export type ForgotPasswordFormData = {
+export type ForgotPasswordFormData = FieldValues & {
   mail: string
 }
 
-export type ResetPasswordFormData = {
+export type ResetPasswordFormData = FieldValues & {
   newPassword: string,
   confirmPassword: string
 }

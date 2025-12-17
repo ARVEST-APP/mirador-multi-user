@@ -10,7 +10,9 @@ import { useUpdateUser } from '../../utils/customHooks/useUpdateProfile.ts';
 import { setInitialMail, UpdateFormData, UpdateUserSchema } from 'features/auth/export.ts';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Form, { FormInputs, FormTypes, getFormElements, IConditions, IFormInputsValues } from 'components/elements/Form.tsx';
+import Form, { FormTypes } from 'components/elements/Form.tsx';
+import { defaultFormFields, CommunFieldsName, AutomatedFormTextField } from 'components/elements/FormField.tsx';
+import { KeyRounded } from '@mui/icons-material';
 
 export const ProfileUpdateForm = () => {
   const user = useUser();
@@ -68,23 +70,48 @@ export const ProfileUpdateForm = () => {
     });
   };
 
-  let values: IFormInputsValues = {};
+  const formElements = [
+    new AutomatedFormTextField(
+      CommunFieldsName.mail,
+      {
+        ...defaultFormFields.mail,
+        handleOnChange: handleChange,
+        isLocked: true,
+        onChangeValidation: true,
+      }),
 
-  Object.entries(formValues).forEach(([key, value]) => {
-    values[key] = value;
-  });
+    new AutomatedFormTextField(
+      CommunFieldsName.name
+    ),
 
-  const conditions: IConditions = {
-    [FormInputs.confirmPassword]:
-    {
-      visible: formValues?.newPassword ? formValues.newPassword.length > 0 : false
-    },
-    [FormInputs.password]:
-    {
-      required: (formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false,
-      disabled: !((formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false),
-    }
-  }
+    new AutomatedFormTextField(
+      CommunFieldsName.newPassword,
+      {
+        ...defaultFormFields.newPassword,
+        handleOnChange: handleChange,
+        isLocked: true,
+        onChangeValidation: true,
+        isRequired: false,
+      }),
+
+    new AutomatedFormTextField(
+      CommunFieldsName.confirmPassword,
+      {
+        ...defaultFormFields.confirmPassword,
+        isVisible: formValues?.newPassword ? formValues.newPassword.length > 0 : false,
+        isRequired: false,
+      }),
+
+    new AutomatedFormTextField(
+      CommunFieldsName.password,
+      {
+        ...defaultFormFields.password,
+        isDisabled: !((formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false),
+        onChangeValidation: true,
+        placeholderIcon: KeyRounded,
+        isRequired: (formValues && formValues.newPassword && formValues.newPassword.length > 0) || (formValues && user.data && formValues.mail !== user.data!.mail) || false,
+      })
+  ]
 
   return (
     <Box
@@ -99,13 +126,8 @@ export const ProfileUpdateForm = () => {
         {t('updateProfile')}
       </Typography>
 
-      <Form
-        name={FormTypes.updateProfile}
-        form={updateProfileform}
-        elements={getFormElements({ name: FormTypes.updateProfile, form: updateProfileform,/*  formValues, */ handleOnChange: handleChange })}
-        values={values}
-        onSubmit={onSubmit}
-        conditions={conditions} submitButton="saveChanges" forgotPasswordButton={true} />
+      <Form name={FormTypes.login} form={updateProfileform} onSubmit={onSubmit} submitButtonText="updateProfile" formElements={formElements} />
+
     </Box>
   );
 };

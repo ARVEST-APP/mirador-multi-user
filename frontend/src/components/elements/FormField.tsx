@@ -1,36 +1,13 @@
-import { FieldError, FieldErrors, UseFormRegister, UseFormReturn } from "react-hook-form";
-import { Grid, IconButton, InputAdornment, SvgIcon, SvgIconTypeMap, TextField, Tooltip, Typography } from "@mui/material";
+import { FieldError, FieldErrors, FieldValues, UseFormRegister, UseFormReturn } from "react-hook-form";
+import { Button, Grid, IconButton, InputAdornment, SvgIcon, SvgIconTypeMap, TextField, Tooltip, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { CloseRounded, DoneRounded, Visibility, VisibilityOff } from "@mui/icons-material";
+import { CloseRounded, DoneRounded, LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { PASSWORD_MINIMUM_LENGTH } from "utils/utils";
 import { t } from "i18next";
-import { RegisterFormData } from "features/auth/types/types";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
-
-// Define the interface for the FormField props
-interface FormFieldProps {
-  form?: UseFormReturn<any, undefined>;
-  type: string;
-  label?: string;
-  placeholder: string;
-  placeholderIcon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; },
-  name: string;
-  value?: string | number;
-  disabled?: boolean;
-  isLocked?: boolean;
-  register: UseFormRegister<any>;
-  required: boolean;
-  error?: FieldError | undefined;
-  helperText?: string;
-  valueAsNumber?: boolean;
-  endAdornment?: JSX.Element;
-  startAdornment?: JSX.Element;
-  autocomplete?: string;
-  onChangeValidation?: boolean;
-  handleKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
-  handleOnChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
+import { MMUModal } from "./modal";
+import ForgotPasswordForm from "features/auth/components/forgotPasswordForm";
 
 export interface PropsToogleVisibility {
   isShowing: boolean;
@@ -113,19 +90,19 @@ export const PasswordCheck: PasswordCriteria[] = [
   { name: PasswordCriterias.specialChar, regexValidation: /[^A-Za-z0-9]/ }
 ]
 
-interface PropsPasswordValidations {
+interface PropsPasswordValidations<TFormValues extends FieldValues> {
   form: UseFormReturn<any, undefined>,
   name: string,
-  errors: FieldErrors<RegisterFormData>
+  errors: FieldErrors<TFormValues>
 }
 
-export const PasswordValidations = ({ form, name, errors }: PropsPasswordValidations) => {
+export const PasswordValidations = <TFormValues extends FieldValues, _>({ form, name, errors }: PropsPasswordValidations<TFormValues>) => {
   const passwordLenght: number = form.watch(name) ? form.watch(name).length : 0;
   return (
     Object.values(PasswordCriterias).map((criteria) => (
       <PasswordValidation
         key={criteria}
-        isValid={errors.newPassword != undefined && errors.newPassword.message?.split(";").includes(criteria) ? false : true}
+        isValid={errors.newPassword != undefined && errors.newPassword.message && errors.newPassword.message.toString().split(";").includes(criteria) ? false : true}
         hint={criteria == PasswordCriterias.length ?
           t(criteria, {
             PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH,
@@ -192,18 +169,18 @@ const defaultHandleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, submit
   }
 }
 
-// export const handleEnterLastFormField = (event: React.KeyboardEvent<HTMLDivElement>, func: () => void) => {
-//   if (event.key === 'Enter') {
-//     const buttons: HTMLCollectionOf<HTMLButtonElement> = document.getElementsByTagName("button");
-//     for (let i = 0; i < buttons.length; i++) {
-//       if (buttons[i].type == "submit") {
-//         buttons[i].focus();
-//         func();
-//         break;
-//       }
-//     }
-//   }
-// };
+// Define the interface for the FormField props
+interface FormFieldProps extends IFormFieldSpecifications {
+  error: FieldError | undefined;
+  form: UseFormReturn<any, undefined>;
+  label: string;
+  register: UseFormRegister<any>;
+  type: string;
+  endAdornment?: JSX.Element;
+  handleKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  startAdornment?: JSX.Element;
+  valueAsNumber?: boolean;
+}
 
 const FormTextField: React.FC<FormFieldProps> = ({
   form,
@@ -213,10 +190,10 @@ const FormTextField: React.FC<FormFieldProps> = ({
   placeholderIcon,
   name,
   value: initialValue,
-  disabled = false,
+  isDisabled: disabled = false,
   isLocked = false,
   register,
-  required: isRequired,
+  isRequired: isRequired,
   error,
   helperText,
   valueAsNumber,
@@ -247,7 +224,7 @@ const FormTextField: React.FC<FormFieldProps> = ({
   JSXendAdornment = JSXendAdornment == undefined && type == "password" ? passwordEnAdornment : JSXendAdornment;
 
   return (
-    <Tooltip title={(label ? label : "") + (isLocked ? " - le mot de passe est nécessaire" : "")}>
+    <Tooltip title={(label ? label : "") + (isLocked ? " - " + t("passwordNeeded") : "")}>
       <TextField
 
         disabled={disabled}
@@ -263,12 +240,9 @@ const FormTextField: React.FC<FormFieldProps> = ({
         variant="outlined"
         {...register(name, { valueAsNumber })}
         error={!!error}
-        helperText={/* helperText || */
+        helperText={
           error?.message && !error.message.includes(";") &&
-          // (error.message === 'characterLimitForPassword' ?
-          //   t('characterLimitForPassword', { PASSWORD_MINIMUM_LENGTH: PASSWORD_MINIMUM_LENGTH, PASSWORD_LENGTH: value?.toString() }) :
           (helperText ? helperText + ' - ' : '') + t(error.message)
-          // )
           || helperText
         }
         InputProps={{
@@ -289,3 +263,172 @@ const FormTextField: React.FC<FormFieldProps> = ({
   );
 };
 export default FormTextField;
+
+
+
+export const enum CommunFieldsName {
+  newMail = "newMail",
+  mail = "mail",
+  confirmMail = "confirmMail",
+  preferredLanguage = "preferredLanguage",
+  name = "name",
+  password = "password",
+  newPassword = "newPassword",
+  confirmPassword = "confirmPassword",
+}
+
+interface IDefaultFormFields {
+  [index: string]: IFormFieldSpecifications
+}
+
+/**
+ * default values (@see IFormFieldSpecifications ) for commun formFields (@see FieldName )
+ * @remarks isRequired: true
+ */
+export const defaultFormFields: IDefaultFormFields = {
+  "newMail":
+    { name: CommunFieldsName.mail, placeholder: CommunFieldsName.mail, isRequired: true, helperText: t('emailSpelling'), autocomplete: "email", onChangeValidation: true },
+  "mail":
+    { name: CommunFieldsName.mail, placeholder: CommunFieldsName.mail, isRequired: true, autocomplete: "email" },
+  "confirmMail":
+    { name: CommunFieldsName.confirmMail, placeholder: CommunFieldsName.confirmMail, isRequired: true, onChangeValidation: true },
+  "password":
+    { name: CommunFieldsName.password, placeholder: CommunFieldsName.password, isRequired: true, autocomplete: "password" },
+  "newPassword":
+    { name: CommunFieldsName.newPassword, placeholder: CommunFieldsName.newPassword, isRequired: true, autocomplete: "new-password", onChangeValidation: true },
+  "confirmPassword":
+    { name: CommunFieldsName.confirmPassword, placeholder: CommunFieldsName.confirmPassword, isRequired: true, autocomplete: "new-password", onChangeValidation: true },
+  "name":
+    { name: CommunFieldsName.name, placeholder: CommunFieldsName.name, isRequired: true, autocomplete: "username" }
+}
+
+/**
+ * Specifications for the display an automated FormTextField (@see FormTextField )
+ */
+export interface IFormFieldSpecifications {
+  name: string;
+  autocomplete?: string,
+  handleOnChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void,
+  helperText?: string,
+  isDisabled?: boolean,
+  isLocked?: boolean,
+  isRequired?: boolean,
+  isVisible?: boolean,
+  onChangeValidation?: boolean,
+  placeholder: string,
+  placeholderIcon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; },
+  value?: string | number,
+}
+
+/**
+ * If inputInfo is not specified, 
+ * - if inputName is a CommunFieldsNamedefault : inputInfo = default values for the commun field
+ * - otherwise, inputInfo = {name: inputName, placeholder: inputName, required: false}
+ */
+export type AutomatedFormTextFieldInfo = {
+  inputName: CommunFieldsName | string;
+  inputInfo?: IFormFieldSpecifications;
+}
+
+/**
+ * Automate the creation of a FormTextField (@see FormTextField ) with its environnement 
+ * 
+ * @remarks If inputInfo is not specified, 
+ * - if inputName is a CommunFieldsName:
+ * inputInfo = default values for the commun field
+ * - otherwise:
+ * inputInfo = {name: inputName, placeholder: inputName, required: false}
+ * 
+ * @remarks Conditions of visibility, requirement and disablement will apply
+ * @remarks A "password" field will be followed by a "Forget password" button
+ * @remarks A "newPassword" field will be followed by a list of password validations
+ */
+export class AutomatedFormTextField {
+  readonly info: AutomatedFormTextFieldInfo;
+
+  constructor(name: CommunFieldsName, inputInfo?: IFormFieldSpecifications);
+  constructor(info: AutomatedFormTextFieldInfo);
+  constructor(param1: AutomatedFormTextFieldInfo | CommunFieldsName, param2?: IFormFieldSpecifications) {
+    if (typeof param1 === "object")
+      this.info = param1 as AutomatedFormTextFieldInfo;
+    else
+      this.info = { inputName: param1, inputInfo: param2 };
+  };
+
+  getName() {
+    return this.info.inputName;
+  }
+
+  /**
+ * @param form
+ * @returns A form item, composed of the FormTextField (@see FormTextField )and its environment.
+ * 
+ * @remarks A custum field is by default non-required and have the same placeholder than its name
+ * @remarks Conditions of visibility, requirement and disablement will apply
+ * @remarks A "password" field will be followed by a "Forget password" button
+ * @remarks A "newPassword" field will be followed by a list of password validations
+ */
+  getFormField(form: UseFormReturn<FieldValues>): JSX.Element | undefined {
+    let input = this.info.inputInfo;
+    if (!input)
+      input = defaultFormFields[this.info.inputName];
+    if (!input)
+      input = { name: this.info.inputName, placeholder: this.info.inputName };
+
+    const [resetPasswordModal, setResetPasswordModal] = useState(false);
+
+    type Mail = FieldValues & {
+      mail?: string;
+    }
+
+    return (
+      <Grid item>
+        {input && (input.isVisible !== false) &&
+          <FormTextField
+            form={form}
+            label={t(input.name)}
+            key={input.name}
+            type={(input.name !== CommunFieldsName.password && input.name !== CommunFieldsName.newPassword && input.name !== CommunFieldsName.confirmPassword) ? "text" : "password"}
+            placeholder={t(input.placeholder ? input.placeholder.toString() : "")}
+            placeholderIcon={input.placeholderIcon ? input.placeholderIcon : input.isLocked ? LockOutlined : undefined}
+            name={input.name}
+            value={this.info.inputInfo?.value}
+            isRequired={input.isRequired ? input.isRequired : false}
+            isLocked={input.isLocked ? input.isLocked : false}
+            isDisabled={input.isDisabled ? input.isDisabled : false}
+            register={form.register}
+            autocomplete={input.autocomplete}
+            helperText={input.helperText}
+            error={form.formState.errors[input.name as keyof typeof form.formState.errors] as FieldError}
+            onChangeValidation={input.onChangeValidation}
+            handleOnChange={input.handleOnChange ? input.handleOnChange : undefined}
+          />
+        }
+        {input.name === CommunFieldsName.newPassword && <PasswordValidations form={form} name={CommunFieldsName.newPassword} errors={form.formState.errors} />}
+        {
+          input.name === CommunFieldsName.password &&
+          <>
+            <Grid item alignSelf={"end"}>
+              <Button
+                aria-label={t("forgotPassword")}
+                variant={"text"}
+                color="primary"
+                onClick={() => { setResetPasswordModal(true) }}
+              >
+                {t('forgotPassword')}
+              </Button>
+            </Grid>
+            {resetPasswordModal && <MMUModal
+              openModal={resetPasswordModal}
+              setOpenModal={setResetPasswordModal}
+              width={"fit-content"}
+              children={
+                <ForgotPasswordForm mail={(form as unknown as UseFormReturn<Mail>).watch(CommunFieldsName.mail)} />
+              }
+            />}
+          </>
+        }
+      </Grid>
+    )
+  }
+}
