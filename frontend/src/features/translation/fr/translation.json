@@ -45,6 +45,7 @@
   "deleteItem": "Supprimer l'élément",
   "description": "Description",
   "disconnect": "Déconnexion",
+  "downloadCSV": "Sauvegarder au format CSV",
   "duplicateMAJ": "DUPLIQUER",
   "editGroupTooltip": "Modifier le groupe",
   "editMedia": "Modifier le média",

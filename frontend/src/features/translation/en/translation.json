@@ -44,6 +44,7 @@
   "deleteItem": "Delete item",
   "description": "Description",
   "disconnect": "Disconnect",
+  "downloadCSV": "Download to CSV",
   "duplicateMAJ": "DUPLICATE",
   "editGroupTooltip": "Edit group",
   "editMedia": "Edit media",
