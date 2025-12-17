@@ -44,6 +44,7 @@ export type User = {
   _isAdmin: boolean;
   isEmailConfirmed: boolean;
   createdAt: Date;
+  lastConnectedAt: Date;
   preferredLanguage: string;
   termsValidatedAt: Date;
 };

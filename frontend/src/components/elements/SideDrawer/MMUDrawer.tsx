@@ -125,7 +125,7 @@ export function MMUDrawer({
           <DrawerElementAdmin
             title={t("titleAdmin")}
             open={isSideDrawerExpanded}
-            text={t("admin")}
+            text={t("adminMenu")}
             action={() => handleChangeContent(MENU_ELEMENT.ADMIN)}
           />
         )}

@@ -24,11 +24,12 @@ export const AdminPanel = () => {
       sortKey: 'isEmailConfirmed',
     },
     {
-      label: t('terms_validated_at'),
+      label: t('termsValidatedAt'),
       align: 'center' as const,
-      sortKey: 'terms_validated_at',
+      sortKey: 'termsValidatedAt',
     },
     { label: t('createdAt'), align: 'left' as const, sortKey: 'createdAt' },
+    { label: t('lastConnectedAt'), align: 'left' as const, sortKey: 'lastConnectedAt' },
   ];
   useEffect(() => {
     fetchUsers();
@@ -41,16 +42,19 @@ export const AdminPanel = () => {
         { value: user.id, align: 'left' as const },
         { value: user.mail, align: 'left' as const },
         { value: user.name, align: 'left' as const },
-        { value: user._isAdmin ? 'Yes' : 'No', align: 'center' as const },
+        { value: t(user._isAdmin ? 'yes' : 'no'), align: 'center' as const },
         {
-          value: user.isEmailConfirmed ? 'Yes' : 'No',
+          value: t(user.isEmailConfirmed ? 'yes' : 'no'),
           align: 'center' as const,
         },
         {
-          value: user.termsValidatedAt ? 'Yes' : 'No', align: 'center' as const,
+          value: t(user.termsValidatedAt ? 'yes' : 'no'), align: 'center' as const,
+        }, {
+          value: new Date(user.createdAt).toLocaleString(),
+          align: 'left' as const,
         },
         {
-          value: new Date(user.createdAt).toLocaleString(),
+          value: new Date(user.lastConnectedAt).toLocaleString(),
           align: 'left' as const,
         },
       ],
