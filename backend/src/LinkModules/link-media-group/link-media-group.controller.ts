@@ -36,7 +36,7 @@ import { UPLOAD_FOLDER } from '../../utils/constants';
 @ApiBearerAuth()
 @Controller('link-media-group')
 export class LinkMediaGroupController {
-  constructor(private readonly linkMediaGroupService: LinkMediaGroupService) {}
+  constructor(private readonly linkMediaGroupService: LinkMediaGroupService) { }
 
   @ApiOperation({ summary: 'Upload a media' })
   @UseGuards(AuthGuard)
@@ -92,9 +92,37 @@ export class LinkMediaGroupController {
   @UseInterceptors(MediaLinkInterceptor)
   @HttpCode(201)
   async linkMedia(@Body() createMediaDto, @Req() req) {
+    // https://developer.mozilla.org/fr/docs/Web/Media/Guides/Formats/Image_types
+    const ImagesExtension = [
+      "apng",
+      "avif",
+      "gif",
+      "jpg",
+      "jpeg",
+      "jfif",
+      "pjpeg",
+      "pjp",
+      "png",
+      "svg",
+      "webp",
+      "bmp",
+      "ico",
+      "cur",
+      "tif",
+      "tiff"
+    ]
+
+    let strExtension = "";
+    ImagesExtension.map((extension, i) => { strExtension += extension + (i < ImagesExtension.length - 1 ? "|" : "") })
+
+    const imageNameRegex = "\/([^\/]*)\.(?:" + strExtension + "){1}";
+    const imageNameFromURL = req.body.url.match(RegExp(imageNameRegex))[1];
+    const title = imageNameFromURL ? imageNameFromURL.replaceAll("_", " ") : req.body.url;
+
+
     const mediaToCreate = {
       ...createMediaDto,
-      title: `${req.body.url}`,
+      title: `${title}`,
       description: 'your media description',
       user_group: createMediaDto.user_group,
       url: `${req.body.url}`,
