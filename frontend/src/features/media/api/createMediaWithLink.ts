@@ -1,8 +1,13 @@
+import { t } from "i18next";
 import storage from "../../../utils/storage.ts";
 import { LinkMediaDto } from "../types/types.ts";
 
 export const createMediaLink = async (mediaLinkDto: LinkMediaDto) => {
   const token = storage.getToken();
+
+  if (!mediaLinkDto.description)
+    mediaLinkDto.description = t("mediaDescription");
+
   try {
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/link-media-group/media/link`,

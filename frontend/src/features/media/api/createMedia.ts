@@ -1,9 +1,10 @@
+import { t as translation } from 'i18next';
 import storage from '../../../utils/storage.ts';
-import { CreateMediaDto } from '../types/types.ts';
+import { FileMediaDto } from '../types/types.ts';
 import toast from 'react-hot-toast';
 
 export const createMedia = async (
-  mediaDto: CreateMediaDto,
+  mediaDto: FileMediaDto,
   t: (key: string) => string,
 ) => {
   const token = storage.getToken();
@@ -12,6 +13,7 @@ export const createMedia = async (
   formData.append("file", mediaDto.file);
   formData.append("idCreator", mediaDto.idCreator.toString());
   formData.append("user_group", JSON.stringify(mediaDto.user_group));
+  formData.append("description", mediaDto.description ? mediaDto.description : translation("mediaDescription"));
 
   try {
     const response = await fetch(

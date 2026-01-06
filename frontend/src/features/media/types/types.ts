@@ -1,15 +1,17 @@
 import { UserGroup } from "../../user-group/types/types.ts";
 import { Dayjs } from "dayjs";
 
-export type CreateMediaDto = {
+type CreateMediaDto = {
   idCreator: number;
   user_group: UserGroup;
+  description?: string;
+}
+
+export type FileMediaDto = CreateMediaDto & {
   file: File;
 };
 
-export type LinkMediaDto = {
-  idCreator: number;
-  user_group: UserGroup;
+export type LinkMediaDto = CreateMediaDto & {
   url: string;
 };
 

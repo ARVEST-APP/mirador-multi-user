@@ -107,6 +107,7 @@
   "manifestThumbnailUrl": "Manifest thumbnail URL",
   "manifestTitle": "Manifest title",
   "media": "Medias",
+  "mediaDescription": "Your media description",
   "mediaLink": "Media link",
   "mediaOriginInfo": "If media come from your media, app will upload it automatically.",
   "mediaShouldBeNoMoreThan": "Media must not exceed {{size}} MB",

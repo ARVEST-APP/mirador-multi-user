@@ -110,6 +110,7 @@
   "manifestThumbnailUrl": "URL de l'aperçu du manifest",
   "manifestTitle": "Titre du manifeste",
   "media": "Médias",
+  "mediaDescription": "Votre description du média",
   "mediaLink": "Lien du média",
   "mediaOriginInfo": "Si le média vient de votre bibliothèque de média, l'application le téléversera automatiquement.",
   "mediaShouldBeNoMoreThan": "Le média ne doit pas dépasser {{size}} MB",

@@ -68,15 +68,15 @@ export class LinkMediaGroupController {
   )
   async uploadSingleFile(
     @UploadedFile() file,
-    @Body() CreateMediaDto,
+    @Body() createMediaDto,
     @Req() req,
   ) {
-    const userGroup = JSON.parse(CreateMediaDto.user_group);
-    // TODO TRAD 'your media description'
+    const userGroup = JSON.parse(createMediaDto.user_group);
+
     const mediaToCreate = {
-      ...CreateMediaDto,
+      ...createMediaDto,
       title: file.originalname,
-      description: 'your media description',
+      description: `${createMediaDto.description}`,
       user_group: userGroup,
       path: `${file.filename}`,
       hash: `${(req as any).generatedHash}`,
@@ -123,7 +123,7 @@ export class LinkMediaGroupController {
     const mediaToCreate = {
       ...createMediaDto,
       title: `${title}`,
-      description: 'your media description',
+      description: `${createMediaDto.description}`,
       user_group: createMediaDto.user_group,
       url: `${req.body.url}`,
       origin: mediaOrigin.LINK,
