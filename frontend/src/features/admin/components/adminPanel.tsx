@@ -55,9 +55,9 @@ export const AdminPanel = () => {
     { label: 'ID', align: 'left' as const, sortKey: 'id' },
     { label: t('mail'), align: 'left' as const, sortKey: 'mail' },
     { label: t('name'), align: 'left' as const, sortKey: 'name' },
-    { label: t('admin'), align: 'center' as const, sortKey: '_isAdmin' },
-    { label: t('emailConfirmed'), align: 'center' as const, sortKey: 'isEmailConfirmed' },
-    { label: t('termsValidatedAt'), align: 'center' as const, sortKey: 'termsValidatedAt' },
+    { label: t('isAdmin'), align: 'center' as const, sortKey: '_isAdmin' },
+    { label: t('isEmailConfirmed'), align: 'center' as const, sortKey: 'isEmailConfirmed' },
+    { label: t('areTermsValidated'), align: 'center' as const, sortKey: 'areTermsValidated' },
     { label: t('createdAt'), align: 'left' as const, sortKey: 'createdAt' },
     { label: t('lastConnectedAt'), align: 'left' as const, sortKey: 'lastConnectedAt' },
   ];
