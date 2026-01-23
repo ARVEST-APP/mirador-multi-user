@@ -1,3 +1,4 @@
+import { getPreferredLanguageFromBrowser } from "features/translation/i18n";
 import { UserResponse } from "../export";
 
 export type RegisterCredentialsDTO = {
@@ -19,7 +20,7 @@ export const register = async (
         },
         body: JSON.stringify({
           ...data,
-          preferredLanguage: navigator.language.split("-")[0],
+          preferredLanguage: getPreferredLanguageFromBrowser(),
         }),
       },
     );
