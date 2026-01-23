@@ -37,8 +37,7 @@ const loadLanguage = async (lng: string): Promise<void> => {
     }
   }
 
-  const availableLocales = ["en", "fr"];
-  const localeToSet = availableLocales.includes(lng) ? lng : "en";
+  const localeToSet = getAvailableLanguage(lng);
 
   dayjs.locale(localeToSet);
   console.log(`✅ Day.js locale set to: ${dayjs.locale()}`);
@@ -52,6 +51,15 @@ const detectedLng =
   "en";
 
 loadLanguage(detectedLng);
+
+export function getAvailableLanguage(lng: string) {
+  const availableLocales = ["en", "fr"];
+  return availableLocales.includes(lng) ? lng : "en";
+}
+
+export function getPreferredLanguageFromBrowser() {
+  return getAvailableLanguage(detectedLng);
+}
 
 export const availableLanguages = [
   { code: "en", label: "English" },
