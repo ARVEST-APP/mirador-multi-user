@@ -7,7 +7,7 @@ import {
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import * as sharp from 'sharp';
+import sharp = require('sharp');
 import {
   getPeerTubeVideoDetails,
   getPeerTubeVideoID,
@@ -21,6 +21,14 @@ import {
 } from './utils';
 import { generateAlphanumericSHA1Hash } from '../hashGenerator';
 import { serializeToValidUrl } from '../serializeToValideUrl';
+
+import { env } from "process";
+import { setGlobalDispatcher, ProxyAgent } from "undici";
+
+if (env.https_proxy) {
+  const dispatcher = new ProxyAgent({ uri: new URL(env.https_proxy).toString() });
+  setGlobalDispatcher(dispatcher);
+}
 
 @Injectable()
 export class MediaInterceptor implements NestInterceptor {
@@ -267,7 +275,7 @@ export class MediaInterceptor implements NestInterceptor {
         }
       } catch (error) {
         console.error('error details:', error);
-        throw new BadRequestException(`Error fetching media: ${error.message}`);
+        throw new BadRequestException(`Error fetching media: ${error instanceof Error ? error.message : ''}`);
       }
     };
 

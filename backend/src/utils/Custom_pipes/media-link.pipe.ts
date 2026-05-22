@@ -8,8 +8,7 @@ import { Observable } from 'rxjs';
 import { join } from 'path';
 import * as fs from 'fs';
 import { createWriteStream } from 'fs';
-import * as sharp from 'sharp';
-import fetch from 'node-fetch';
+import sharp = require('sharp');
 import { generateAlphanumericSHA1Hash } from '../hashGenerator';
 import { mediaTypes } from '../../enum/mediaTypes';
 import {
@@ -22,6 +21,14 @@ import {
   isVideo,
   isYouTubeVideo,
 } from './utils';
+
+import { env } from "process";
+import { setGlobalDispatcher, ProxyAgent } from "undici";
+
+if (env.https_proxy) {
+  const dispatcher = new ProxyAgent({ uri: new URL(env.https_proxy).toString() });
+  setGlobalDispatcher(dispatcher);
+}
 
 @Injectable()
 export class MediaLinkInterceptor implements NestInterceptor {
@@ -94,8 +101,8 @@ export class MediaLinkInterceptor implements NestInterceptor {
 
       return next.handle();
     } catch (error) {
-      console.error(`Error processing image: ${error.message}`);
-      throw new Error(`Error processing image: ${error.message}`);
+      console.error(`Error processing image: ${error instanceof Error ? error.message : ''}`);
+      throw new Error(`Error processing image: ${error instanceof Error ? error.message : ''}`);
     }
   }
 }
