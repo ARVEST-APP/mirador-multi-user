@@ -1,3 +1,11 @@
+import { env } from "process";
+import { setGlobalDispatcher, ProxyAgent } from "undici";
+
+if (env.https_proxy) {
+  const dispatcher = new ProxyAgent({ uri: new URL(env.https_proxy).toString() });
+  setGlobalDispatcher(dispatcher);
+}
+
 export function isYouTubeVideo(url: string): boolean {
   const youtubeRegex =
     /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&\n?#]+)/;
@@ -19,7 +27,7 @@ export async function isPeerTubeVideo(url: string): Promise<boolean> {
       '<meta property="og:platform" content="PeerTube">',
     );
   } catch (error) {
-    console.error(`Error checking PeerTube meta tag: ${error.message}`);
+    console.error(`Error checking PeerTube meta tag: ${error instanceof Error ? error.message : ''}`);
     return false;
   }
 }
@@ -119,7 +127,7 @@ export async function getYoutubeJson(
     const toreturn = await videoResponse.json();
     return toreturn;
   } catch (error: any) {
-    console.error(`Error getYoutubeJson: ${error.message}`);
+    console.error(`Error getYoutubeJson: ${error instanceof Error ? error.message : ''}`);
   }
 }
 
@@ -133,7 +141,7 @@ export async function isImage(url: string): Promise<boolean> {
     }
     return response.headers.get('Content-Type')?.startsWith('image') || false;
   } catch (error) {
-    console.error(`Error getting image: ${error.message}`);
+    console.error(`Error getting image: ${error instanceof Error ? error.message : ''}`);
     return false;
   }
 }
@@ -167,6 +175,6 @@ export async function getVideoDuration(videoUrl: string): Promise<number> {
     }
     throw new Error('Duration not found in the HTML.');
   } catch (error) {
-    throw new Error(`Failed to fetch video duration: ${error.message}`);
+    throw new Error(`Failed to fetch video duration: ${error instanceof Error ? error.message : ''}`);
   }
 }
