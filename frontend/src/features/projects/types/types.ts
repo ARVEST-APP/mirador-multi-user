@@ -5,8 +5,9 @@ import { Dayjs } from "dayjs";
 
 export type Project = {
   id: number;
+  arvestVersion?: number;
   title: string;
-  userWorkspace: IState;
+  userWorkspace: IState | {};
   owner: User;
   rights?: ItemsRights;
   description: string;
@@ -37,17 +38,17 @@ export type ProjectGroupUpdateDto = {
   project: {
     id: number;
     title: string;
-    userWorkspace: IState;
+    userWorkspace: IState | {};
     ownerId?: number;
   };
   rights?: ItemsRights;
   group?: UserGroup;
-  shared?:boolean;
+  shared?: boolean;
 };
 export type CreateProjectDto = {
   title: string;
   ownerId: number;
-  userWorkspace: IState | undefined;
+  userWorkspace: IState | {} | undefined;
   metadata: Record<string, string>;
 };
 
