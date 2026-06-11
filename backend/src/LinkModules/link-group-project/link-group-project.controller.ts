@@ -27,13 +27,14 @@ import {
 } from '@nestjs/swagger';
 import { LinkGroupProject } from './entities/link-group-project.entity';
 import { LockProjectDto } from './dto/lockProjectDto';
+import { Project } from 'src/BaseEntities/project/entities/project.entity';
 
 @ApiBearerAuth()
 @Controller('link-group-project')
 export class LinkGroupProjectController {
   constructor(
     private readonly linkGroupProjectService: LinkGroupProjectService,
-  ) {}
+  ) { }
 
   @ApiOperation({
     summary: 'Find all Link between group and project for a specific group Id',
@@ -242,9 +243,9 @@ export class LinkGroupProjectController {
     return this.linkGroupProjectService.createProject(createProjectDto);
   }
 
-  @ApiOperation({ summary: 'Get all users that can access the project' })
+  @ApiOperation({ summary: 'Get all projects a user have access to.' })
   @ApiOkResponse({
-    description: 'The project user have access and his rights on it',
+    description: 'A list of projects the user have access and his rights on each of them.',
     type: LinkGroupProject,
     isArray: true,
   })
@@ -258,6 +259,31 @@ export class LinkGroupProjectController {
         'you are not allowed to request for this projects',
       );
     }
+  }
+
+  @ApiOperation({ summary: 'Get a project by ID' })
+  @ApiOkResponse({
+    description: 'The project with ID projectId, if the user has to it.',
+    type: Project,
+  })
+  @SetMetadata('action', ActionType.READ)
+  @UseGuards(AuthGuard)
+  @Get('projects/:projectId')
+  async getProjectById(
+    @Param('projectId') projectId: number,
+    @Req() request
+  ) {
+    return await this.linkGroupProjectService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
+      projectId,
+      async () => {
+        const linkedProject = await this.linkGroupProjectService.getProject(
+          projectId
+        );
+        return linkedProject.project;
+      },
+    );
   }
 
   @ApiOperation({ summary: 'Duplicate a project' })

@@ -46,7 +46,7 @@ export class LinkGroupProjectService {
     private readonly linkUserGroupService: LinkUserGroupService,
     private readonly metadataService: MetadataService,
     private readonly annotationPageService: AnnotationPageService,
-  ) {}
+  ) { }
 
   async create(createLinkGroupProjectDto: CreateLinkGroupProjectDto) {
     try {
@@ -110,6 +110,24 @@ export class LinkGroupProjectService {
         'An error occurred while updating the linkGroupProject',
         error,
       );
+    }
+  }
+
+  async getProject(
+    projectId: number
+  ): Promise<LinkGroupProject> {
+    try {
+      const project = await this.linkGroupProjectRepository.findOne({
+        where: { project: { id: projectId } },
+        relations: ['project', 'user_group'],
+      });
+      if (!project) {
+        throw new NotFoundException(`Project with ID ${projectId} not found.`);
+      }
+      return project;
+    } catch (error) {
+      this.logger.error((error as Error).message, (error as Error).stack);
+      throw new InternalServerErrorException(error);
     }
   }
 
