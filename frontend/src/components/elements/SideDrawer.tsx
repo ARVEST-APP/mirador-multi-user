@@ -201,7 +201,7 @@ export const SideDrawer = ({
         (projectUser) => projectUser.id == selectedProjectId,
       )!;
 
-      if (projectToUpdate.userWorkspace as IState) {
+      if (projectToUpdate.userWorkspace == null || projectToUpdate.userWorkspace as IState) {
         //TODO FIX THIS BECAUSE PROJECT TO UPDATE SHOULD NOT BE UNDEFINED
         if (projectToUpdate == undefined) {
           projectToUpdate = userProjects.find(

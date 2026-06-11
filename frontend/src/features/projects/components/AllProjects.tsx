@@ -398,7 +398,7 @@ export const AllProjects = ({
                             <ModalButton
                               tooltipButton={t("openProject")}
                               onClickFunction={() =>
-                                projectUser.userWorkspace as IState &&
+                                (projectUser.userWorkspace == null || projectUser.userWorkspace as IState) &&
                                 initializeMirador(
                                   projectUser.userWorkspace,
                                   projectUser,
