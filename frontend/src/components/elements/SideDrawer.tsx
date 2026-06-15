@@ -58,13 +58,13 @@ export const MENU_ELEMENT = {
 };
 
 export const SideDrawer = ({
-                             user,
-                             handleDisconnect,
-                             selectedProjectId,
-                             setSelectedProjectId,
-                             setViewer,
-                             viewer,
-                           }: ISideDrawerProps) => {
+  user,
+  handleDisconnect,
+  selectedProjectId,
+  setSelectedProjectId,
+  setViewer,
+  viewer,
+}: ISideDrawerProps) => {
   const [selectedContent, setSelectedContent] = useState(MENU_ELEMENT.PROJECTS);
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -200,18 +200,21 @@ export const SideDrawer = ({
       let projectToUpdate: Project = userProjects.find(
         (projectUser) => projectUser.id == selectedProjectId,
       )!;
-      //TODO FIX THIS BECAUSE PROJECT TO UPDATE SHOULD NOT BE UNDEFINED
-      if (projectToUpdate == undefined) {
-        projectToUpdate = userProjects.find(
-          (projectUser) => projectUser.id == selectedProjectId,
-        )!;
-      }
-      projectToUpdate.userWorkspace = miradorViewer!;
-      if (projectToUpdate) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { rights, share, shared, ...projectWithoutRights } =
-          projectToUpdate;
-        await updateProject({ project: projectWithoutRights });
+
+      if (projectToUpdate.userWorkspace == null || projectToUpdate.userWorkspace as IState) {
+        //TODO FIX THIS BECAUSE PROJECT TO UPDATE SHOULD NOT BE UNDEFINED
+        if (projectToUpdate == undefined) {
+          projectToUpdate = userProjects.find(
+            (projectUser) => projectUser.id == selectedProjectId,
+          )!;
+        }
+        projectToUpdate.userWorkspace = miradorViewer!;
+        if (projectToUpdate) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { rights, share, shared, ...projectWithoutRights } =
+            projectToUpdate;
+          await updateProject({ project: projectWithoutRights });
+        }
       }
     } else {
       const project: CreateProjectDto = {

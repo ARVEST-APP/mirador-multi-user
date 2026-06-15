@@ -16,4 +16,7 @@ export class CreateProjectDto {
 
   description?: string;
   thumbnailUrl?: string;
+
+  @IsOptional()
+  arvestVersion?: number;
 }

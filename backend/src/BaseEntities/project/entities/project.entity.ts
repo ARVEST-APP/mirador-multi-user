@@ -18,6 +18,9 @@ export class Project {
   @IsNumberString()
   id: number;
 
+  @Column({ nullable: true })
+  arvestVersion?: number;
+
   @Column({ length: 100 })
   @IsString()
   title: string;
