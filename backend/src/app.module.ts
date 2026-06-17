@@ -28,6 +28,7 @@ import { LinkMetadataFormatGroupModule } from './LinkModules/link-metadata-forma
 import { MetadataModule } from './BaseEntities/metadata/metadata.module';
 import { ImpersonationModule } from './impersonation/impersonation.module';
 import { AnnotationPageModule } from './BaseEntities/annotation-page/annotation-page.module';
+import { iiifProviderModule } from './museums/iiif-provider.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { AnnotationPageModule } from './BaseEntities/annotation-page/annotation-
     MetadataModule,
     ImpersonationModule,
     AnnotationPageModule,
+    iiifProviderModule
   ],
   controllers: [AppController],
   providers: [
