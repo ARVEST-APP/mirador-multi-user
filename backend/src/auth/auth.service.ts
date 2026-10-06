@@ -162,6 +162,10 @@ export class AuthService {
 
       const user = await this.usersService.findOneByMail(decodeData.mail);
       if (!user) {
+        // No address in the log: the token's address is personal data.
+        this.logger.warn(
+          'Password reset refused: no user found for the address in the token',
+        );
         throw new NotFoundException(
           `No user found for email: ${decodeData.mail}`,
         );
@@ -175,10 +179,19 @@ export class AuthService {
           resetToken: null,
         });
       } else {
+        this.logger.warn(
+          `Password reset refused: token is not the one stored for user ID ${user.id}`,
+        );
         throw new UnauthorizedException('invalid token');
       }
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      ) {
+        // A refusal, not a fault. Logged where it is raised, except a password
+        // that is too short: plain input validation, not logged.
         throw error;
       }
       this.logger.error(error.message, error.stack);

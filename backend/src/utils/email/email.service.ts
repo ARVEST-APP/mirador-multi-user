@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { resetPasswordEnglish } from './templates/resetPassword/ResetPasswordEnglish';
 import { ResetPasswordEmailDto } from './Dto/resetPasswordEmailDto';
 import { confirmationEmailTemplateFrench } from './templates/confirmationMail/French';
-import { Language } from './utils';
+import { escapeHtml, Language, maskEmails } from './utils';
 import { resetPasswordFrench } from './templates/resetPassword/French';
 
 @Injectable()
@@ -25,11 +25,13 @@ export class EmailServerService implements MailService {
     name: string,
     language: string,
   ): string {
+    // The name is chosen freely at sign-up: escaped before it goes into the HTML.
+    const safeName = escapeHtml(name);
     switch (language) {
       case Language.ENGLISH:
-        return confirmationEmailTemplateEnglish({ url, name });
+        return confirmationEmailTemplateEnglish({ url, name: safeName });
       case Language.FRENCH:
-        return confirmationEmailTemplateFrench({ url, name });
+        return confirmationEmailTemplateFrench({ url, name: safeName });
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
@@ -40,11 +42,13 @@ export class EmailServerService implements MailService {
     name: string,
     language: Language,
   ): string {
+    // The name is chosen freely at sign-up: escaped before it goes into the HTML.
+    const safeName = escapeHtml(name);
     switch (language) {
       case Language.ENGLISH:
-        return resetPasswordEnglish({ url, name });
+        return resetPasswordEnglish({ url, name: safeName });
       case Language.FRENCH:
-        return resetPasswordFrench({ url, name });
+        return resetPasswordFrench({ url, name: safeName });
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
@@ -80,51 +84,40 @@ export class EmailServerService implements MailService {
 
   async sendInternalServerErrorNotification(details: {
     message: string;
-    url: string;
+    route: string;
     method: string;
     timestamp: string;
-    body: any;
-    user: {
-      id: number;
-      email: string;
-      name: string;
-    };
+    bodyFields: string[];
+    userId?: number;
     stack: string;
   }) {
     if (!process.env.SMTP_DOMAIN) {
       return;
     }
 
-    // Hide sensitive fields
-    if (details.body?.password) {
-      details.body.password = 'HIDDEN_USER_PASSWORD_TRY';
-    }
-
     console.log('Send mail internal server error');
 
-    const subject = `🚨 Internal Server Error: ${details.url}`;
+    // The alert leaves the server: e-mail addresses are masked wherever they
+    // come from, and every text is escaped before it goes into the HTML.
+    const forAlert = (text: string) => escapeHtml(maskEmails(text));
 
-    // Format JSON fields for readability
-    const formattedBody = JSON.stringify(details.body, null, 2)
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    // The subject is plain text: masked, not escaped.
+    const subject = `🚨 Internal Server Error: ${maskEmails(details.route)}`;
 
     const formattedStack = details.stack
-      ? `<pre style="background: #fee; padding: 10px; border-radius: 5px; white-space: pre-wrap; color: darkred;">${details.stack.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`
+      ? `<pre style="background: #fee; padding: 10px; border-radius: 5px; white-space: pre-wrap; color: darkred;">${forAlert(details.stack)}</pre>`
       : '<p>No stack trace available</p>';
 
     const mailBody = `
     <h2 style="color: red;">🚨 Internal Server Error</h2>
-    <p><strong>URL:</strong> ${details.url}</p>
-    <p><strong>Method:</strong> ${details.method}</p>
-    <p><strong>Message:</strong> ${details.message}</p>
-    <h3>User Details</h3>
-    <p><strong>ID:</strong> ${details.user.id}</p>
-    <p><strong>Email:</strong> ${details.user.email}</p>
-    <p><strong>Name:</strong> ${details.user.name}</p>
-    <h3>Request Body</h3>
-    <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; white-space: pre-wrap;">${formattedBody}</pre>
-    <p><strong>Timestamp:</strong> ${details.timestamp}</p>
+    <p><strong>Route:</strong> ${forAlert(details.route)}</p>
+    <p><strong>Method:</strong> ${forAlert(details.method)}</p>
+    <p><strong>Message:</strong> ${forAlert(details.message)}</p>
+    <h3>User</h3>
+    <p><strong>ID:</strong> ${forAlert(String(details.userId ?? 'not logged in'))}</p>
+    <h3>Request Body Fields</h3>
+    <p>${forAlert(details.bodyFields.join(', ') || 'none')}</p>
+    <p><strong>Timestamp:</strong> ${forAlert(details.timestamp)}</p>
     <h3>Stack Trace</h3>
     ${formattedStack}
   `;

@@ -11,7 +11,6 @@ import * as Process from 'process';
 import metadata from './metadata';
 import { EmailServerService } from './utils/email/email.service';
 import { InternalServerErrorFilter } from './utils/ErrorFilters/InternalServerErrorExceptionFilter';
-import { UsersService } from './BaseEntities/users/users.service';
 import { json } from 'express';
 
 async function bootstrap() {
@@ -20,10 +19,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.useGlobalFilters(
-    new InternalServerErrorFilter(
-      app.get(EmailServerService),
-      app.get(UsersService),
-    ),
+    new InternalServerErrorFilter(app.get(EmailServerService)),
   );
 
   app.enableCors();
