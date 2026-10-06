@@ -25,11 +25,13 @@ export class EmailServerService implements MailService {
     name: string,
     language: string,
   ): string {
+    // The name is chosen freely at sign-up: escaped before it goes into the HTML.
+    const safeName = escapeHtml(name);
     switch (language) {
       case Language.ENGLISH:
-        return confirmationEmailTemplateEnglish({ url, name });
+        return confirmationEmailTemplateEnglish({ url, name: safeName });
       case Language.FRENCH:
-        return confirmationEmailTemplateFrench({ url, name });
+        return confirmationEmailTemplateFrench({ url, name: safeName });
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
@@ -40,11 +42,13 @@ export class EmailServerService implements MailService {
     name: string,
     language: Language,
   ): string {
+    // The name is chosen freely at sign-up: escaped before it goes into the HTML.
+    const safeName = escapeHtml(name);
     switch (language) {
       case Language.ENGLISH:
-        return resetPasswordEnglish({ url, name });
+        return resetPasswordEnglish({ url, name: safeName });
       case Language.FRENCH:
-        return resetPasswordFrench({ url, name });
+        return resetPasswordFrench({ url, name: safeName });
       default:
         throw new Error(`Unsupported language: ${language}`);
     }
