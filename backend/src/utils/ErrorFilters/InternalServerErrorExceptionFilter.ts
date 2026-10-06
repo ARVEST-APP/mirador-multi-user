@@ -49,10 +49,12 @@ export class InternalServerErrorFilter implements ExceptionFilter {
         stack: exception.stack,
       });
     } catch (error) {
-      console.error('Failed to send error notification email:', error.message);
-      throw new InternalServerErrorException(error.message);
+      // Never throw from here: nothing catches an error thrown by a filter, so
+      // it would end the process. The alert is lost, the request is still answered.
+      // Console only: a mail that cannot be sent is already written to the log
+      // file by EmailServerService.sendMail.
+      console.error('Failed to send error notification email:', error?.message);
     }
-    // Send email using your email service
 
     // Send the response
     response.status(status).json({

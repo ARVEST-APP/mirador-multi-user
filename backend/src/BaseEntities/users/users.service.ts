@@ -111,8 +111,12 @@ export class UsersService {
     try {
       return await this.userRepository.findOneBy({ mail });
     } catch (error) {
+      // The lookup itself failed (database): not a "not found", which is the
+      // `null` returned above.
       this.logger.error(error.message, error.stack);
-      throw new NotFoundException(`User no found ${mail}`);
+      throw new InternalServerErrorException(
+        'An error occurred while looking for the user',
+      );
     }
   }
 
