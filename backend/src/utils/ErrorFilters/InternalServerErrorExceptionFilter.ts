@@ -5,19 +5,18 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AccessTokenPayload } from '../../auth/access-token-payload';
 import { EmailServerService } from '../email/email.service';
-import { UsersService } from '../../BaseEntities/users/users.service';
+import { maskEmails } from '../email/utils';
 
 interface AuthenticatedRequest extends Request {
-  user?: any;
+  // absent on routes that AuthGuard does not protect (login, reset-password...)
+  user?: AccessTokenPayload;
 }
 
 @Catch(InternalServerErrorException)
 export class InternalServerErrorFilter implements ExceptionFilter {
-  constructor(
-    private readonly emailService: EmailServerService,
-    private readonly userService: UsersService,
-  ) {}
+  constructor(private readonly emailService: EmailServerService) {}
 
   async catch(exception: InternalServerErrorException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -28,24 +27,21 @@ export class InternalServerErrorFilter implements ExceptionFilter {
     console.error('Internal server error:', exception.message);
 
     try {
-      const user = request.user?.sub
-        ? await this.userService.findOne(request.user?.sub)
-        : {
-            id: 0,
-            mail: 'unknown',
-            name: 'unknown',
-          };
+      // The alert leaves the server by e-mail, so it does not quote the request:
+      // the route's pattern ("/link-user-group/looking-for-user/:partialString"),
+      // not the URL; the names of the body's fields, not their values; and the
+      // user's id only. The error message is sent as the service wrote it.
+      const body = request.body;
       await this.emailService.sendInternalServerErrorNotification({
         message: exception.message,
-        url: request.url,
+        route: request.route?.path ?? 'unknown route',
         method: request.method,
         timestamp: new Date().toISOString(),
-        body: request.body,
-        user: {
-          id: user.id,
-          email: user.mail,
-          name: user.name,
-        },
+        bodyFields:
+          body && typeof body === 'object' && !Array.isArray(body)
+            ? Object.keys(body)
+            : [],
+        userId: request.user?.sub,
         stack: exception.stack,
       });
     } catch (error) {
@@ -53,7 +49,10 @@ export class InternalServerErrorFilter implements ExceptionFilter {
       // it would end the process. The alert is lost, the request is still answered.
       // Console only: a mail that cannot be sent is already written to the log
       // file by EmailServerService.sendMail.
-      console.error('Failed to send error notification email:', error?.message);
+      console.error(
+        'Failed to send error notification email:',
+        maskEmails(String(error?.message)),
+      );
     }
 
     // Send the response

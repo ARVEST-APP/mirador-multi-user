@@ -1,7 +1,14 @@
-import { ArgumentsHost, InternalServerErrorException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Controller,
+  INestApplication,
+  InternalServerErrorException,
+  Post,
+} from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import * as request from 'supertest';
 import { InternalServerErrorFilter } from './InternalServerErrorExceptionFilter';
 import { EmailServerService } from '../email/email.service';
-import { UsersService } from '../../BaseEntities/users/users.service';
 
 describe('InternalServerErrorFilter', () => {
   const json = jest.fn();
@@ -15,14 +22,10 @@ describe('InternalServerErrorFilter', () => {
       }),
     }) as unknown as ArgumentsHost;
 
-  const filterWith = (
-    sendInternalServerErrorNotification: jest.Mock,
-    findOne: jest.Mock = jest.fn(),
-  ) =>
-    new InternalServerErrorFilter(
-      { sendInternalServerErrorNotification } as unknown as EmailServerService,
-      { findOne } as unknown as UsersService,
-    );
+  const filterWith = (sendInternalServerErrorNotification: jest.Mock) =>
+    new InternalServerErrorFilter({
+      sendInternalServerErrorNotification,
+    } as unknown as EmailServerService);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -65,24 +68,112 @@ describe('InternalServerErrorFilter', () => {
     expect(json).toHaveBeenCalledTimes(1);
   });
 
-  it('still answers 500, without throwing, when the user cannot be read', async () => {
-    const send = jest.fn();
-    const findOne = jest.fn().mockRejectedValue(new Error('database down'));
-    const filter = filterWith(send, findOne);
+  it('prints the alert that could not be sent, without e-mail address', async () => {
+    const send = jest
+      .fn()
+      .mockRejectedValue(new Error('rejected <admin@example.org>'));
+    const filter = filterWith(send);
 
-    await expect(
-      filter.catch(
-        new InternalServerErrorException('boom'),
-        hostFor({
-          url: '/some/route',
-          method: 'GET',
-          body: {},
-          user: { sub: 1 },
-        }),
-      ),
-    ).resolves.toBeUndefined();
+    await filter.catch(
+      new InternalServerErrorException('boom'),
+      hostFor({ url: '/some/route', method: 'POST', body: {} }),
+    );
 
-    expect(send).not.toHaveBeenCalled();
-    expect(status).toHaveBeenCalledWith(500);
+    expect(console.error).toHaveBeenCalledWith(
+      'Failed to send error notification email:',
+      'rejected <[e-mail]>',
+    );
+  });
+
+  it("gives the alert the route's pattern, the names of the body's fields and the user's id", async () => {
+    const send = jest.fn().mockResolvedValue(undefined);
+    const filter = filterWith(send);
+
+    await filter.catch(
+      new InternalServerErrorException('boom'),
+      hostFor({
+        url: '/things/search/secret-term?also=secret-query',
+        route: { path: '/things/search/:term' },
+        method: 'POST',
+        body: { token: 'secret-token', password: 'secret-password' },
+        user: { sub: 7 },
+      }),
+    );
+
+    const details = send.mock.calls[0][0];
+    expect(details.route).toBe('/things/search/:term');
+    expect(details.bodyFields).toEqual(['token', 'password']);
+    expect(details.userId).toBe(7);
+    expect(JSON.stringify(details)).not.toContain('secret');
+  });
+
+  it('sends the alert when the request has no route, no body and no user', async () => {
+    const send = jest.fn().mockResolvedValue(undefined);
+    const filter = filterWith(send);
+
+    await filter.catch(
+      new InternalServerErrorException('boom'),
+      hostFor({ url: '/some/route', method: 'GET' }),
+    );
+
+    const details = send.mock.calls[0][0];
+    expect(details.route).toBe('unknown route');
+    expect(details.bodyFields).toEqual([]);
+    expect(details.userId).toBeUndefined();
+  });
+});
+
+// Through a real Nest application: proves what `request.route.path` holds.
+describe('InternalServerErrorFilter in a Nest application', () => {
+  @Controller('things')
+  class ThingsController {
+    @Post('search/:term')
+    search() {
+      throw new InternalServerErrorException('boom');
+    }
+  }
+
+  const send = jest.fn().mockResolvedValue(undefined);
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      controllers: [ThingsController],
+    }).compile();
+    app = module.createNestApplication();
+    app.useGlobalFilters(
+      new InternalServerErrorFilter({
+        sendInternalServerErrorNotification: send,
+      } as unknown as EmailServerService),
+    );
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("answers 500 and alerts with the route's pattern, not what the user typed", async () => {
+    await request(app.getHttpServer())
+      .post('/things/search/typed-term?also=typed-query')
+      .send({ name: 'typed-value' })
+      .expect(500);
+
+    expect(send).toHaveBeenCalledTimes(1);
+    const details = send.mock.calls[0][0];
+    expect(details.route).toBe('/things/search/:term');
+    expect(details.method).toBe('POST');
+    expect(details.bodyFields).toEqual(['name']);
+    expect(details.userId).toBeUndefined();
+    expect(JSON.stringify(details)).not.toContain('typed');
   });
 });
