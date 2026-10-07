@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   Param,
@@ -13,6 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { LinkGroupProjectService } from './link-group-project.service';
+import { LinkUserGroupService } from '../link-user-group/link-user-group.service';
 import { AuthGuard } from '../../auth/auth.guard';
 import { AddProjectToGroupDto } from './dto/addProjectToGroupDto';
 import { CreateProjectDto } from '../../BaseEntities/project/dto/create-project.dto';
@@ -27,30 +29,55 @@ import {
 } from '@nestjs/swagger';
 import { LinkGroupProject } from './entities/link-group-project.entity';
 import { LockProjectDto } from './dto/lockProjectDto';
-import { Project } from 'src/BaseEntities/project/entities/project.entity';
+import { Project } from '../../BaseEntities/project/entities/project.entity';
 
 @ApiBearerAuth()
 @Controller('link-group-project')
 export class LinkGroupProjectController {
   constructor(
     private readonly linkGroupProjectService: LinkGroupProjectService,
+    private readonly linkUserGroupService: LinkUserGroupService,
   ) { }
 
   @ApiOperation({
-    summary: 'Find all Link between group and project for a specific group Id',
+    summary:
+      'Find all links between a group and its projects, for a group the user belongs to',
   })
+  @SetMetadata('action', ActionType.READ)
   @UseGuards(AuthGuard)
   @Get('/:groupId')
-  async getAllGroupProjects(@Param('groupId') groupId: number) {
-    return await this.linkGroupProjectService.findAllGroupProjectByUserGroupId(
+  async getAllGroupProjects(@Param('groupId') groupId: number, @Req() request) {
+    return await this.linkUserGroupService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
       groupId,
+      async () => {
+        return this.linkGroupProjectService.findAllGroupProjectByUserGroupId(
+          groupId,
+        );
+      },
     );
   }
 
+  @ApiOperation({
+    summary:
+      'List the groups that can access a project, and their rights on it',
+  })
+  @SetMetadata('action', ActionType.READ)
   @UseGuards(AuthGuard)
   @Get('/project/relation/:projectId')
-  getProjectRelation(@Param('projectId') projectId: number) {
-    return this.linkGroupProjectService.getProjectRelations(projectId);
+  async getProjectRelation(
+    @Param('projectId') projectId: number,
+    @Req() request,
+  ) {
+    return await this.linkGroupProjectService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
+      projectId,
+      async () => {
+        return this.linkGroupProjectService.getProjectRelations(projectId);
+      },
+    );
   }
 
   @SetMetadata('action', ActionType.UPDATE)
@@ -216,31 +243,52 @@ export class LinkGroupProjectController {
   // }
 
   @ApiOperation({
-    summary: 'Search for a project that a specific group can access',
+    summary: 'Search for a project that a group the user belongs to can access',
   })
   @ApiOkResponse({
     description: 'The project and rights for the user on it',
     type: LinkGroupProject,
     isArray: true,
   })
+  @SetMetadata('action', ActionType.READ)
   @UseGuards(AuthGuard)
   @Get('/search/:UserGroupId/:partialProjectName')
-  lookingForProject(
+  async lookingForProject(
     @Param('partialProjectName') partialProjectName: string,
-    @Param('UserGroupId') userId: number,
+    @Param('UserGroupId') userGroupId: number,
+    @Req() request,
   ) {
-    return this.linkGroupProjectService.searchForUserGroupProjectWithPartialProjectName(
-      partialProjectName,
-      userId,
+    return await this.linkUserGroupService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
+      userGroupId,
+      async () => {
+        return this.linkGroupProjectService.searchForUserGroupProjectWithPartialProjectName(
+          partialProjectName,
+          userGroupId,
+        );
+      },
     );
   }
 
-  @ApiOperation({ summary: 'Project creation' })
+  @ApiOperation({ summary: 'Project creation, for the logged-in user' })
   @ApiBody({ type: CreateProjectDto })
   @UseGuards(AuthGuard)
   @Post('/project/')
-  createProject(@Body() createProjectDto: CreateProjectDto) {
-    return this.linkGroupProjectService.createProject(createProjectDto);
+  async createProject(
+    @Body() createProjectDto: CreateProjectDto,
+    @Req() request,
+  ) {
+    const ownerId = createProjectDto.ownerId;
+    if (ownerId != undefined && Number(ownerId) !== Number(request.user.sub)) {
+      throw new ForbiddenException(
+        'A project can only be created for the logged-in user',
+      );
+    }
+    return this.linkGroupProjectService.createProject({
+      ...createProjectDto,
+      ownerId: request.user.sub,
+    });
   }
 
   @ApiOperation({ summary: 'Get all projects a user have access to.' })
@@ -316,9 +364,17 @@ export class LinkGroupProjectController {
   @SetMetadata('action', ActionType.UPDATE)
   @UseGuards(AuthGuard)
   @Get('/snapshot/:projectId')
-  async generateSnapshot(@Param('projectId') projectId: number) {
-    return await this.linkGroupProjectService.generateProjectSnapshot(
+  async generateSnapshot(
+    @Param('projectId') projectId: number,
+    @Req() request,
+  ) {
+    return await this.linkGroupProjectService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
       projectId,
+      async () => {
+        return this.linkGroupProjectService.generateProjectSnapshot(projectId);
+      },
     );
   }
 
