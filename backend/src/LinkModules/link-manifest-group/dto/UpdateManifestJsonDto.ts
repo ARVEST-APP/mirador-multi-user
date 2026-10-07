@@ -1,13 +1,8 @@
-import { manifestOrigin } from '../../../enum/origins';
-
 export class UpdateManifestJsonDto {
-  id: number;
+  manifestId?: number;
 
-  json:any;
+  // Accepted in place of `manifestId`, the name this DTO used to declare.
+  id?: number;
 
-  origin: manifestOrigin;
-
-  path: string;
-
-  hash: string;
+  json: any;
 }

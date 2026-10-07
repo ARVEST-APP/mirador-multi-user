@@ -21,13 +21,19 @@ import { generateAlphanumericSHA1Hash } from '../../utils/hashGenerator';
 import { fileFilterMedia } from '../../BaseEntities/media/utils/fileFilterMedia';
 import { SharpPipeInterceptor } from '../../utils/Custom_pipes/sharp.pipe';
 import { mediaOrigin } from '../../enum/origins';
+import { MediaGroupRights } from '../../enum/rights';
 import { MediaLinkInterceptor } from '../../utils/Custom_pipes/media-link.pipe';
 import { UpdateMediaDto } from '../../BaseEntities/media/dto/update-media.dto';
 import { UpdateMediaGroupRelationDto } from './dto/updateMediaGroupRelationDto';
 import { AddMediaToGroupDto } from './dto/addMediaToGroupDto';
 import * as fs from 'fs';
 import { ActionType } from '../../enum/actions';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { LinkMediaGroup } from './entities/link-media-group.entity';
 import { Media } from '../../BaseEntities/media/entities/media.entity';
 import { mediaTypes } from '../../enum/mediaTypes';
@@ -187,15 +193,29 @@ export class LinkMediaGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Grant access to media' })
+  @ApiOperation({
+    summary: 'Grant access to media',
+    description:
+      'The caller must be editor or admin of each media and cannot grant more than their own right: 403 otherwise. Default right: reader.',
+  })
+  @ApiBody({ type: AddMediaToGroupDto })
   @ApiOkResponse({
-    description: 'The media updated',
-    type: Media,
+    description:
+      'For each media, the groups that can access it and their rights on it',
+    type: LinkMediaGroup,
     isArray: true,
   })
   @UseGuards(AuthGuard)
   @Post('/media/add')
-  addMediaToGroup(@Body() addMediaToGroupDto: AddMediaToGroupDto) {
+  async addMediaToGroup(
+    @Body() addMediaToGroupDto: AddMediaToGroupDto,
+    @Req() request,
+  ) {
+    await this.linkMediaGroupService.checkUserCanShareMedias(
+      request.user.sub,
+      addMediaToGroupDto.mediasId,
+      addMediaToGroupDto.rights ?? MediaGroupRights.READER,
+    );
     return this.linkMediaGroupService.addMediaToGroup(addMediaToGroupDto);
   }
 

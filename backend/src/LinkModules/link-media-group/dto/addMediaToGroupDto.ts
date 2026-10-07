@@ -1,3 +1,4 @@
+import { IsEnum, IsOptional } from 'class-validator';
 import { MediaGroupRights } from '../../../enum/rights';
 
 export class AddMediaToGroupDto {
@@ -5,5 +6,7 @@ export class AddMediaToGroupDto {
 
   mediasId: number[];
 
+  @IsOptional()
+  @IsEnum(MediaGroupRights)
   rights?: MediaGroupRights;
 }

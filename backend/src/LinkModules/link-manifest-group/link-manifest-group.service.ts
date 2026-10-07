@@ -10,7 +10,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { LinkManifestGroup } from './entities/link-manifest-group.entity';
 import { Repository } from 'typeorm';
-import { ManifestGroupRights, ITEM_RIGHTS_PRIORITY } from '../../enum/rights';
+import {
+  ManifestGroupRights,
+  ITEM_RIGHTS_PRIORITY,
+  canGrantItemRights,
+} from '../../enum/rights';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
 import { Manifest } from '../../BaseEntities/manifest/entities/manifest.entity';
 import { UserGroup } from '../../BaseEntities/user-group/entities/user-group.entity';
@@ -22,7 +26,6 @@ import * as fs from 'fs';
 import { UpdateManifestGroupRelation } from './dto/update-manifest-group-Relation';
 import { UpdateManifestDto } from '../../BaseEntities/manifest/dto/update-manifest.dto';
 import { ActionType } from '../../enum/actions';
-import { UpdateManifestJsonDto } from './dto/UpdateManifestJsonDto';
 import * as path from 'node:path';
 import { manifestOrigin } from '../../enum/origins';
 import { UPLOAD_FOLDER } from '../../utils/constants';
@@ -154,26 +157,44 @@ export class LinkManifestGroupService {
     }
   }
 
-  async updateManifestJson(updateManifestJsonDto: UpdateManifestJsonDto) {
+  async updateManifestJson(manifestId: number, json: any) {
     try {
-      if (updateManifestJsonDto.origin === manifestOrigin.LINK) {
+      const manifest = await this.manifestService.findOne(manifestId);
+      if (manifest.origin === manifestOrigin.LINK) {
         throw new UnsupportedMediaTypeException(
           "Manifests linked can't be updated",
         );
       }
 
-      // Build the path to the file
-      const path = `${UPLOAD_FOLDER}/${updateManifestJsonDto.hash}/${updateManifestJsonDto.path}`;
+      const uploadFolder = path.resolve(UPLOAD_FOLDER);
+      const filePath = path.resolve(uploadFolder, manifest.hash, manifest.path);
+      if (!filePath.startsWith(uploadFolder + path.sep)) {
+        throw new Error(
+          `Manifest ${manifestId} is stored outside ${UPLOAD_FOLDER}`,
+        );
+      }
 
-      // Overwrite the file with the new JSON data
-      this.writeJsonFile(path, updateManifestJsonDto.json);
+      this.writeJsonFile(filePath, json);
 
       return { message: 'JSON file replaced successfully' };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
-        `An error occurred while updating manifest with ID ${updateManifestJsonDto.id}`,
+        `An error occurred while updating manifest with ID ${manifestId}`,
         error.message,
+      );
+    }
+  }
+
+  async checkUserCanShareManifest(
+    userId: number,
+    manifestId: number,
+    rightsToGrant: ManifestGroupRights,
+  ) {
+    const userLink = await this.getHighestRightForManifest(userId, manifestId);
+    if (!canGrantItemRights(userLink?.rights, rightsToGrant)) {
+      throw new ForbiddenException(
+        `You are not allowed to share with these rights the manifest with id: ${manifestId}`,
       );
     }
   }
