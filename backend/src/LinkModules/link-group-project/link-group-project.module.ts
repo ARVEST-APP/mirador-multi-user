@@ -10,6 +10,7 @@ import { UserGroupModule } from '../../BaseEntities/user-group/user-group.module
 import { LinkUserGroupModule } from '../link-user-group/link-user-group.module';
 import { MetadataModule } from '../../BaseEntities/metadata/metadata.module';
 import { AnnotationPageModule } from '../../BaseEntities/annotation-page/annotation-page.module';
+import { AnnotationPageController } from '../../BaseEntities/annotation-page/annotation-page.controller';
 
 //TODO: The import on LinkUserGroupModule there is a toxic pattern and should be removed because it could lead to circular dependencies. The logic where we need LinkGroupProjectService and another LinkModule should be moved in a different module.
 @Module({
@@ -22,7 +23,10 @@ import { AnnotationPageModule } from '../../BaseEntities/annotation-page/annotat
     MetadataModule,
     AnnotationPageModule,
   ],
-  controllers: [LinkGroupProjectController],
+  // AnnotationPageController is registered here and not in AnnotationPageModule,
+  // which this module imports: the controller needs LinkGroupProjectService, and
+  // importing in both directions would be circular.
+  controllers: [LinkGroupProjectController, AnnotationPageController],
   providers: [LinkGroupProjectService],
 })
 export class LinkGroupProjectModule {}
