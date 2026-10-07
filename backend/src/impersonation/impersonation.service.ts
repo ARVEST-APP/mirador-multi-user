@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -60,52 +61,94 @@ export class ImpersonationService {
     }
   }
 
-  async validateToken(token: string): Promise<Impersonation> {
+  private async findPendingImpersonation(
+    token: string,
+  ): Promise<Impersonation> {
+    // TypeORM ignores an undefined value in `where`: without this check a
+    // request without token would match any impersonation not yet used.
+    if (typeof token !== 'string' || token === '') {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
     const impersonation = await this.impersonationRepository.findOne({
       where: { token, used: false },
-      relations: ['user'],
+      relations: ['user', 'adminUser'],
     });
-    if (!impersonation || new Date() > impersonation.exchangeBefore) {
-      throw new Error('Invalid or expired token');
+    if (
+      !impersonation ||
+      !impersonation.user ||
+      new Date() > impersonation.exchangeBefore
+    ) {
+      throw new UnauthorizedException('Invalid or expired token');
     }
+    return impersonation;
+  }
+
+  private async markUsed(impersonation: Impersonation): Promise<void> {
+    // `used: false` in the criteria: of two exchanges at the same time, one fails.
+    const result = await this.impersonationRepository.update(
+      { id: impersonation.id, used: false },
+      { used: true },
+    );
+    if (result.affected !== 1) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
+
+  async consumeToken(token: string): Promise<Impersonation> {
+    const impersonation = await this.findPendingImpersonation(token);
+    await this.markUsed(impersonation);
     return impersonation;
   }
 
   async impersonateUserData(
     impersonateDto: ImpersonateDto,
+    adminUserId: number,
   ): Promise<{ access_token: string }> {
     try {
-      const isTokenValid = await this.validateToken(impersonateDto.token);
-      if (!isTokenValid) {
-        throw new UnauthorizedException(
-          'You are not allowed to impersonate user',
+      const impersonation = await this.findPendingImpersonation(
+        impersonateDto.token,
+      );
+      if (Number(impersonation.adminUser?.id) !== Number(adminUserId)) {
+        this.logger.warn(
+          `Impersonation refused: user ID ${adminUserId} did not create impersonation ${impersonation.id}`,
         );
+        throw new ForbiddenException('You are not allowed to impersonate user');
       }
-      const user = await this.userService.findOne(impersonateDto.userId);
+      const user = impersonation.user;
+      // The pass is signed for the token's user, never for the body's userId. A
+      // body naming someone else is refused, not ignored: the caller would
+      // otherwise be logged in as a user it did not ask for.
+      if (
+        impersonateDto.userId != undefined &&
+        Number(impersonateDto.userId) !== Number(user.id)
+      ) {
+        this.logger.warn(
+          `Impersonation refused: impersonation ${impersonation.id} was not created for user ID ${impersonateDto.userId}`,
+        );
+        throw new ForbiddenException('You are not allowed to impersonate user');
+      }
+      await this.markUsed(impersonation);
+
       const payload = {
         sub: user.id,
         user: user.name,
         isEmailConfirmed: user.isEmailConfirmed,
+        termsValidatedAt: user.termsValidatedAt,
       };
       return {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         'an error occurred while impersonating the user',
       );
     }
   }
-
-  // async revokeToken(impersonationId: string): Promise<void> {
-  //   const impersonation = await this.impersonationRepository.findOne({
-  //     where: { id: impersonationId },
-  //   });
-  //   if (!impersonation) {
-  //     throw new Error('Impersonation record not found');
-  //   }
-  //
-  //   impersonation.used = true;
-  //   await this.impersonationRepository.save(impersonation);
-  // }
 }

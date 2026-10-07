@@ -33,10 +33,7 @@ export class AuthService {
     try {
       if (isImpersonate != undefined) {
         const impersonation =
-          await this.impersonationService.validateToken(isImpersonate);
-        if (!impersonation) {
-          throw new UnauthorizedException('token is invalid');
-        }
+          await this.impersonationService.consumeToken(isImpersonate);
         const user = await this.usersService.findOneByMail(
           impersonation.user.mail,
         );
