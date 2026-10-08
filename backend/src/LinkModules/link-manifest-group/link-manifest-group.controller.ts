@@ -177,12 +177,35 @@ export class LinkManifestGroupController {
     }
   }
 
-  @ApiOperation({ summary: 'updateManifest' })
+  @ApiOperation({
+    summary: 'Replace the JSON file of an uploaded or created manifest',
+    description:
+      'Needs the right to update the manifest. Only `manifestId` and `json` are read from the body. A linked manifest cannot be updated.',
+  })
+  @ApiBody({ type: UpdateManifestJsonDto })
+  @SetMetadata('action', ActionType.UPDATE)
   @UseGuards(AuthGuard)
   @Patch('/manifest/updateJson')
-  async UpdateManifest(@Body() updateManifestJsonDto: UpdateManifestJsonDto) {
-    return await this.linkManifestGroupService.updateManifestJson(
-      updateManifestJsonDto,
+  async UpdateManifest(
+    @Body() updateManifestJsonDto: UpdateManifestJsonDto,
+    @Req() request,
+  ) {
+    const manifestId = Number(
+      updateManifestJsonDto.manifestId ?? updateManifestJsonDto.id,
+    );
+    if (!Number.isInteger(manifestId)) {
+      throw new BadRequestException('manifestId is required');
+    }
+    return await this.linkManifestGroupService.checkPolicies(
+      request.metadata.action,
+      request.user.sub,
+      manifestId,
+      async () => {
+        return this.linkManifestGroupService.updateManifestJson(
+          manifestId,
+          updateManifestJsonDto.json,
+        );
+      },
     );
   }
 
@@ -267,16 +290,29 @@ export class LinkManifestGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Grant access to a manifest' })
+  @ApiOperation({
+    summary: 'Grant access to a manifest',
+    description:
+      'The caller must be editor or admin of the manifest and cannot grant more than their own right: 403 otherwise. Default right: reader.',
+  })
   @ApiOkResponse({
-    description: 'The manifests and the users rights on them',
+    description:
+      'The groups that can access the manifest and their rights on it, in a list of one element',
     type: LinkManifestGroup,
     isArray: true,
   })
   @ApiBody({ type: AddManifestToGroupDto })
   @UseGuards(AuthGuard)
   @Post('/manifest/add')
-  addManifestToGroup(@Body() addManifestToGroup: AddManifestToGroupDto) {
+  async addManifestToGroup(
+    @Body() addManifestToGroup: AddManifestToGroupDto,
+    @Req() request,
+  ) {
+    await this.linkManifestGroupService.checkUserCanShareManifest(
+      request.user.sub,
+      addManifestToGroup.manifestId,
+      addManifestToGroup.rights ?? ManifestGroupRights.READER,
+    );
     return this.linkManifestGroupService.addManifestToGroup(addManifestToGroup);
   }
 

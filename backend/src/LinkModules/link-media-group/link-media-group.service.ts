@@ -14,7 +14,11 @@ import { LinkMediaGroup } from './entities/link-media-group.entity';
 import { Repository } from 'typeorm';
 import { UserGroupService } from '../../BaseEntities/user-group/user-group.service';
 import { MediaService } from '../../BaseEntities/media/media.service';
-import { MediaGroupRights, ITEM_RIGHTS_PRIORITY } from '../../enum/rights';
+import {
+  MediaGroupRights,
+  ITEM_RIGHTS_PRIORITY,
+  canGrantItemRights,
+} from '../../enum/rights';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
 import { CreateMediaDto } from '../../BaseEntities/media/dto/create-media.dto';
 import { AddMediaToGroupDto } from './dto/addMediaToGroupDto';
@@ -454,6 +458,25 @@ export class LinkMediaGroupService {
       const currentRight = ITEM_RIGHTS_PRIORITY[current.rights] || 0;
       return currentRight > prevRight ? current : prev;
     });
+  }
+
+  async checkUserCanShareMedias(
+    userId: number,
+    mediasId: number[],
+    rightsToGrant: MediaGroupRights,
+  ) {
+    const refusedMediasId: number[] = [];
+    for (const mediaId of mediasId) {
+      const userLink = await this.getHighestRightForMedia(userId, mediaId);
+      if (!canGrantItemRights(userLink?.rights, rightsToGrant)) {
+        refusedMediasId.push(mediaId);
+      }
+    }
+    if (refusedMediasId.length > 0) {
+      throw new ForbiddenException(
+        `You are not allowed to share with these rights the media with id: ${refusedMediasId.join(', ')}`,
+      );
+    }
   }
 
   async checkPolicies(

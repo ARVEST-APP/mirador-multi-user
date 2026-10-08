@@ -21,6 +21,7 @@ import { CreateProjectDto } from '../../BaseEntities/project/dto/create-project.
 import { UpdateProjectGroupDto } from './dto/updateProjectGroupDto';
 import { UpdateAccessToProjectDto } from './dto/updateAccessToProjectDto';
 import { ActionType } from '../../enum/actions';
+import { GroupProjectRights, canGrantItemRights } from '../../enum/rights';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -127,7 +128,11 @@ export class LinkGroupProjectController {
     );
   }
 
-  @ApiOperation({ summary: 'Allow a group to access a project' })
+  @ApiOperation({
+    summary: 'Allow a group to access a project',
+    description:
+      'The caller must be editor or admin of the project and cannot grant more than their own right: a higher one answers 403. Default right: reader.',
+  })
   @ApiBody({ type: AddProjectToGroupDto })
   @ApiOkResponse({
     description:
@@ -146,7 +151,14 @@ export class LinkGroupProjectController {
       request.metadata.action,
       request.user.sub,
       addProjectToGroupDto.projectId,
-      async () => {
+      async (linkEntity) => {
+        const rightsToGrant =
+          addProjectToGroupDto.rights ?? GroupProjectRights.READER;
+        if (!canGrantItemRights(linkEntity.rights, rightsToGrant)) {
+          throw new ForbiddenException(
+            `You are not allowed to share with these rights the project with id: ${addProjectToGroupDto.projectId}`,
+          );
+        }
         return this.linkGroupProjectService.addProjectToGroup(
           addProjectToGroupDto,
         );

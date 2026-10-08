@@ -352,7 +352,7 @@ export class LinkGroupProjectService {
         user_group: userGroup,
         project: project,
       });
-      return await this.findAllGroupProjectByUserGroupId(projectId);
+      return await this.getProjectRelations(projectId);
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(

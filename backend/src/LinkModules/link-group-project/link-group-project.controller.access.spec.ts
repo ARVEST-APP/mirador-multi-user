@@ -62,11 +62,13 @@ describe('LinkGroupProjectController: who may call', () => {
           .filter((link) => link.user_group.id == groupId)
           .map((link) => link.project),
     ),
+    findOne: jest.fn(async (projectId: number) => ({ id: projectId })),
   };
   const groupService = {
     findUserPersonalGroup: jest.fn(async (userId: number) =>
       personalGroupOf(userId),
     ),
+    findOne: jest.fn(async (groupId: number) => ({ id: groupId })),
   };
   const memberships = [
     {
@@ -268,6 +270,64 @@ describe('LinkGroupProjectController: who may call', () => {
         controller.createProject(dto(OTHER_USER), requestFor()),
       ).rejects.toBeInstanceOf(ForbiddenException);
       expect(createProject).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /project/add', () => {
+    let addProjectToGroup: jest.SpyInstance;
+
+    beforeEach(() => {
+      addProjectToGroup = jest
+        .spyOn(service, 'addProjectToGroup')
+        .mockResolvedValue([]);
+    });
+
+    const share = (projectId: number, rights?: GroupProjectRights) =>
+      controller.addProjectToGroup(
+        { projectId, groupId: OTHER_GROUP, rights },
+        requestFor(ActionType.UPDATE),
+      );
+    const callerIsEditor = () =>
+      jest
+        .spyOn(service, 'getHighestRightForProject')
+        .mockResolvedValue({ rights: GroupProjectRights.EDITOR });
+
+    it('lets an admin grant admin', async () => {
+      await share(OWN_PROJECT, GroupProjectRights.ADMIN);
+
+      expect(addProjectToGroup).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['editor', GroupProjectRights.EDITOR],
+      ['the default right', undefined],
+    ])('lets an editor grant %s', async (_case, rights) => {
+      callerIsEditor();
+
+      await share(OWN_PROJECT, rights);
+
+      expect(addProjectToGroup).toHaveBeenCalledTimes(1);
+    });
+
+    it('answers 403, naming the project, when an editor grants admin', async () => {
+      callerIsEditor();
+
+      const answer = share(OWN_PROJECT, GroupProjectRights.ADMIN);
+
+      await expect(answer).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(answer).rejects.toThrow(`id: ${OWN_PROJECT}`);
+      expect(addProjectToGroup).not.toHaveBeenCalled();
+    });
+
+    it('answers with the groups of the shared project', async () => {
+      addProjectToGroup.mockRestore();
+      jest.spyOn(service, 'create').mockResolvedValue(undefined);
+
+      const answer = await share(OWN_PROJECT);
+
+      expect(answer).toEqual([
+        { ...links[0], personalOwnerGroupId: OWN_GROUP },
+      ]);
     });
   });
 });
