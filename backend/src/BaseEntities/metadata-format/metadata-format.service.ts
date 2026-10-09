@@ -8,6 +8,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MetadataFormat } from './entities/metadata-format.entity';
 import { Repository } from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
+import { pickDefined } from '../../utils/objectFields';
+
+const CREATION_FIELDS = ['title', 'metadata', 'creatorId'] as const;
 
 @Injectable()
 export class MetadataFormatService {
@@ -19,7 +22,9 @@ export class MetadataFormatService {
   ) {}
   async create(createMetadataFormatDto: CreateMetadataFormatDto) {
     try {
-      return await this.metadataFormatRepository.save(createMetadataFormatDto);
+      return await this.metadataFormatRepository.save(
+        pickDefined(createMetadataFormatDto, CREATION_FIELDS),
+      );
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
         throw new ConflictException(

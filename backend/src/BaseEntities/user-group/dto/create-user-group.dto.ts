@@ -8,7 +8,9 @@ export class CreateUserGroupDto {
 
   ownerId: number;
 
-  user: User;
+  // Optional, and only its `id` is read: the owner and first admin of a new
+  // group is always the logged in user. Another user's id is refused with a 403.
+  user?: User;
 
   type: UserGroupTypes;
 }

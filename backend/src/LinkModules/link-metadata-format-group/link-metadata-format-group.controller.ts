@@ -12,6 +12,7 @@ import { LinkMetadataFormatGroupService } from './link-metadata-format-group.ser
 import { CreateLinkMetadataFormatGroupDto } from './dto/create-link-metadata-format-group.dto';
 import { AuthGuard } from '../../auth/auth.guard';
 import { ApiOperation } from '@nestjs/swagger';
+import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @Controller('link-metadata-format-group')
 export class LinkMetadataFormatGroupController {
@@ -19,15 +20,25 @@ export class LinkMetadataFormatGroupController {
     private readonly linkMetadataFormatGroupService: LinkMetadataFormatGroupService,
   ) {}
 
-  @ApiOperation({ summary: 'createMetadataFormat' })
+  @ApiOperation({
+    summary: 'createMetadataFormat',
+    description:
+      'The creator is the logged in user: `creatorId` may be left out, another id answers 403. Only `title` and `metadata` are read from the rest of the body.',
+  })
   @UseGuards(AuthGuard)
   @Post()
   create(
     @Body() createLinkMetadataFormatGroupDto: CreateLinkMetadataFormatGroupDto,
+    @Req() request,
   ) {
-    return this.linkMetadataFormatGroupService.createMetadataFormat(
-      createLinkMetadataFormatGroupDto,
-    );
+    return this.linkMetadataFormatGroupService.createMetadataFormat({
+      ...createLinkMetadataFormatGroupDto,
+      creatorId: ownerFromCaller(
+        createLinkMetadataFormatGroupDto.creatorId,
+        request.user.sub,
+        'metadata format',
+      ),
+    });
   }
 
   @ApiOperation({ summary: 'getMetadataFormatForUser' })

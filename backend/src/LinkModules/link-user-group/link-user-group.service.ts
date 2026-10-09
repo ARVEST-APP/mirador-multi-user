@@ -181,17 +181,16 @@ export class LinkUserGroupService {
     }
   }
 
-  async createUserGroup(
-    createUserGroupDto: CreateUserGroupDto,
-  ): Promise<UserGroup> {
+  async createUserGroup(title: string, ownerId: number): Promise<UserGroup> {
     try {
       const userGroup = await this.groupService.create({
-        ...createUserGroupDto,
+        title,
+        ownerId,
         type: UserGroupTypes.MULTI_USER,
       });
       await this.create({
         rights: User_UserGroupRights.ADMIN,
-        userId: createUserGroupDto.user.id,
+        userId: ownerId,
         user_groupId: userGroup.id,
       });
 
