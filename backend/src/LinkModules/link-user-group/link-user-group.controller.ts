@@ -83,7 +83,7 @@ export class LinkUserGroupController {
 
   @ApiOperation({ summary: 'Create a user' })
   @ApiOkResponse({
-    description: 'The user creation route',
+    description: 'The created user, without its password.',
     type: CreateUserDto,
     isArray: false,
   })

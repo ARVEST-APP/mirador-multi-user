@@ -76,13 +76,19 @@ export class UsersService {
       if ('_isAdmin' in dto || 'admin' in dto) {
         throw new InternalServerErrorException('Admin field cannot be set.');
       }
+      const user = {
+        mail: dto.mail,
+        name: dto.name,
+        password: dto.password,
+        preferredLanguage: dto.preferredLanguage,
+      };
       if (!Boolean(process.env.SMTP_DOMAIN)) {
         return await this.userRepository.save({
-          ...dto,
+          ...user,
           isEmailConfirmed: true,
         });
       }
-      return await this.userRepository.save(dto);
+      return await this.userRepository.save(user);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;

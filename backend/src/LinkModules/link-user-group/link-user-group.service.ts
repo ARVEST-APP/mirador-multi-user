@@ -115,6 +115,9 @@ export class LinkUserGroupService {
       const salt = await bcrypt.genSalt();
       userToSave.password = await bcrypt.hash(createUserDto.password, salt);
       const savedUser = await this.userService.create(userToSave);
+      const createdUser = { ...savedUser };
+      delete createdUser.password;
+      delete createdUser.resetToken;
 
       const userPersonalGroup = await this.groupService.create({
         title: savedUser.name,
@@ -130,7 +133,7 @@ export class LinkUserGroupService {
       });
 
       if (!Boolean(process.env.SMTP_DOMAIN)) {
-        return savedUser;
+        return createdUser;
       }
       await this.metadataFormatGroupService.createMetadataFormat({
         title: 'Dublin Core',
@@ -143,7 +146,7 @@ export class LinkUserGroupService {
         savedUser.preferredLanguage,
       );
 
-      return savedUser;
+      return createdUser;
     } catch (error) {
       this.logger.error(error.message, error.stack);
       if (error.status === 409) {
