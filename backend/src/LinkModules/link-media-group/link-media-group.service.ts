@@ -14,14 +14,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LinkMediaGroup } from './entities/link-media-group.entity';
 import { Repository } from 'typeorm';
 import { UserGroupService } from '../../BaseEntities/user-group/user-group.service';
-import { MediaService } from '../../BaseEntities/media/media.service';
+import { MediaService, NewMedia } from '../../BaseEntities/media/media.service';
 import {
   MediaGroupRights,
   ITEM_RIGHTS_PRIORITY,
   canGrantItemRights,
 } from '../../enum/rights';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
-import { CreateMediaDto } from '../../BaseEntities/media/dto/create-media.dto';
 import { AddMediaToGroupDto } from './dto/addMediaToGroupDto';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -62,21 +61,37 @@ export class LinkMediaGroupService {
     }
   }
 
-  async createMedia(mediaDto: CreateMediaDto) {
+  async createMedia(newMedia: NewMedia, sentGroupId?: number) {
     try {
-      const { idCreator, path, user_group } = mediaDto;
-      const media = await this.mediaService.create(mediaDto);
+      const personalGroup = await this.groupService.findUserPersonalGroup(
+        newMedia.idCreator,
+      );
+      if (
+        sentGroupId !== undefined &&
+        Number(sentGroupId) !== personalGroup.id
+      ) {
+        this.logger.warn(
+          `Creation of a media by user ${newMedia.idCreator} refused: it names group ${Number(sentGroupId)}, not their personal group`,
+        );
+        throw new ForbiddenException(
+          'A new media goes to your personal group: send it, or none',
+        );
+      }
+      const media = await this.mediaService.create(newMedia, personalGroup);
       await this.addMediaToGroup({
-        userGroupId: user_group.id,
+        userGroupId: personalGroup.id,
         mediasId: [media.id],
         rights: MediaGroupRights.ADMIN,
       });
       const toReturn = await this.getMediaRightsForUser(
-        user_group.id,
+        personalGroup.id,
         media.id,
       );
       return toReturn;
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         'An error occurred while creating the media',

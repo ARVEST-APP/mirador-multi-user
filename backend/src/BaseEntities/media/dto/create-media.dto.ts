@@ -1,6 +1,3 @@
-import { IsOptional } from 'class-validator';
-import { UserGroup } from '../../user-group/entities/user-group.entity';
-
 export class CreateMediaDto {
   path: string;
 
@@ -9,6 +6,4 @@ export class CreateMediaDto {
   title: string;
 
   description: string;
-  @IsOptional()
-  user_group: UserGroup;
 }

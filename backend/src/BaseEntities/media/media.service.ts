@@ -4,14 +4,33 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Media } from './entities/media.entity';
+import { UserGroup } from '../user-group/entities/user-group.entity';
 import { Repository } from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
 import { differingFields, pickDefined } from '../../utils/objectFields';
 
+// A creation writes CREATION_FIELDS, and `metadata`, which the service builds.
+const CREATION_FIELDS = [
+  'title',
+  'description',
+  'path',
+  'hash',
+  'url',
+  'origin',
+  'mediaTypes',
+  'idCreator',
+] as const;
+
+// A new media as the server builds it: a link has no `path`, an upload no
+// `url`, and a link without thumbnail no `hash`.
+export type NewMedia = Pick<
+  Media,
+  'title' | 'description' | 'origin' | 'mediaTypes' | 'idCreator'
+> &
+  Partial<Pick<Media, 'path' | 'url' | 'hash'>>;
 // An update writes EDITABLE_FIELDS only. FIXED_FIELDS serves the warning when
 // one is sent with another value.
 const EDITABLE_FIELDS = [
@@ -37,11 +56,11 @@ export class MediaService {
     private readonly mediaRepository: Repository<Media>,
   ) {}
 
-  async create(createMediaDto: CreateMediaDto) {
+  async create(newMedia: NewMedia, creatorGroup: UserGroup) {
     try {
       const media = this.mediaRepository.create({
-        ...createMediaDto,
-        metadata: { creator: createMediaDto.user_group.title },
+        ...pickDefined(newMedia, CREATION_FIELDS),
+        metadata: { creator: creatorGroup.title },
       });
       return await this.mediaRepository.save(media);
     } catch (error) {
