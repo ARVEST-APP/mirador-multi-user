@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,6 +10,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Media } from './entities/media.entity';
 import { Repository } from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
+import { differingFields, pickDefined } from '../../utils/objectFields';
+
+// An update writes EDITABLE_FIELDS only. FIXED_FIELDS serves the warning when
+// one is sent with another value.
+const EDITABLE_FIELDS = [
+  'title',
+  'description',
+  'thumbnailUrl',
+  'metadata',
+] as const;
+const FIXED_FIELDS = [
+  'hash',
+  'path',
+  'origin',
+  'idCreator',
+  'url',
+  'mediaTypes',
+];
 
 @Injectable()
 export class MediaService {
@@ -57,20 +76,35 @@ export class MediaService {
       );
     }
   }
-  async update(id: number, updateMediaDto: UpdateMediaDto) {
+  async update(id: number, updateMediaDto: UpdateMediaDto, userId: number) {
     try {
+      const fields = pickDefined(updateMediaDto, EDITABLE_FIELDS);
+      if (Object.keys(fields).length === 0) {
+        throw new BadRequestException(
+          `Nothing to update: send at least one of ${EDITABLE_FIELDS.join(', ')}`,
+        );
+      }
       const media = await this.mediaRepository.findOne({ where: { id } });
 
       if (!media) {
         throw new NotFoundException(`Media with ID ${id} not found`);
       }
 
-      Object.assign(media, updateMediaDto);
+      const ignored = differingFields(updateMediaDto, media, FIXED_FIELDS);
+      if (ignored.length > 0) {
+        this.logger.warn(
+          `Update of media ${id} by user ${userId}: ignored ${ignored.join(', ')}, sent with another value than the stored one`,
+        );
+      }
+      Object.assign(media, fields);
 
       await this.mediaRepository.save(media);
 
       return this.findOne(id);
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         'An error occurred while updating the media',

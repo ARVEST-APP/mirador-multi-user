@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   forwardRef,
   HttpException,
@@ -270,7 +271,7 @@ export class LinkMediaGroupService {
     }
   }
 
-  async updateMedia(updateGroupMediaDto) {
+  async updateMedia(updateGroupMediaDto, userId: number) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { rights, ...mediaUpdateData } = updateGroupMediaDto;
@@ -278,8 +279,12 @@ export class LinkMediaGroupService {
       return await this.mediaService.update(
         updateGroupMediaDto.id,
         mediaUpdateData,
+        userId,
       );
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new HttpException(
         `An error occurred while updating media with id: ${updateGroupMediaDto.id}: ${error.message}`,

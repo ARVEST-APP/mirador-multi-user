@@ -145,12 +145,17 @@ export class LinkMediaGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Update a media' })
+  @ApiOperation({
+    summary: 'Update a media',
+    description:
+      'Needs the right to update the media. Only `id`, `title`, `description`, `thumbnailUrl` and `metadata` are read from the body; other fields are ignored. Answers 400 when none of the four is sent.',
+  })
   @ApiOkResponse({
     description: 'The media updated',
     type: Media,
     isArray: false,
   })
+  @ApiBody({ type: UpdateMediaDto })
   @SetMetadata('action', ActionType.UPDATE)
   @UseGuards(AuthGuard)
   @Patch('/media')
@@ -163,7 +168,10 @@ export class LinkMediaGroupController {
       request.user.sub,
       updateGroupMediaDto.id,
       async () => {
-        return this.linkMediaGroupService.updateMedia(updateGroupMediaDto);
+        return this.linkMediaGroupService.updateMedia(
+          updateGroupMediaDto,
+          request.user.sub,
+        );
       },
     );
   }

@@ -235,7 +235,11 @@ export class LinkManifestGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Update a manifest object' })
+  @ApiOperation({
+    summary: 'Update a manifest object',
+    description:
+      'Needs the right to update the manifest. Only `id`, `title`, `description`, `thumbnailUrl` and `metadata` are read from the body; other fields are ignored. Answers 400 when none of the four is sent.',
+  })
   @ApiOkResponse({
     description: 'The manifest updated',
     type: Manifest,
@@ -254,7 +258,10 @@ export class LinkManifestGroupController {
       request.user.sub,
       updateManifestDto.id,
       async () => {
-        return this.linkManifestGroupService.updateManifest(updateManifestDto);
+        return this.linkManifestGroupService.updateManifest(
+          updateManifestDto,
+          request.user.sub,
+        );
       },
     );
   }

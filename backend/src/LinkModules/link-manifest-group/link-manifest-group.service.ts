@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   HttpException,
   HttpStatus,
@@ -133,13 +134,17 @@ export class LinkManifestGroupService {
     }
   }
 
-  async updateManifest(updateManifestDto: UpdateManifestDto) {
+  async updateManifest(updateManifestDto: UpdateManifestDto, userId: number) {
     try {
       return await this.manifestService.update(
         updateManifestDto.id,
         updateManifestDto,
+        userId,
       );
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         `an error occurred while updating manifest with id ${updateManifestDto.id}`,
