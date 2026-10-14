@@ -38,13 +38,18 @@ import { LinkMediaGroup } from './entities/link-media-group.entity';
 import { Media } from '../../BaseEntities/media/entities/media.entity';
 import { mediaTypes } from '../../enum/mediaTypes';
 import { UPLOAD_FOLDER } from '../../utils/constants';
+import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
 @Controller('link-media-group')
 export class LinkMediaGroupController {
   constructor(private readonly linkMediaGroupService: LinkMediaGroupService) {}
 
-  @ApiOperation({ summary: 'Upload a media' })
+  @ApiOperation({
+    summary: 'Upload a media',
+    description:
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403. The media goes to their personal group: `user_group` (the group as JSON text) may be left out, another group answers 403.',
+  })
   @UseGuards(AuthGuard)
   @Post('/media/upload')
   @UseInterceptors(
@@ -77,38 +82,55 @@ export class LinkMediaGroupController {
     @Body() CreateMediaDto,
     @Req() req,
   ) {
-    const userGroup = JSON.parse(CreateMediaDto.user_group);
     // TODO TRAD 'your media description'
     const mediaToCreate = {
-      ...CreateMediaDto,
+      idCreator: ownerFromCaller(
+        CreateMediaDto.idCreator,
+        req.user.sub,
+        'media',
+      ),
       title: file.originalname,
       description: 'your media description',
-      user_group: userGroup,
       path: `${file.filename}`,
       hash: `${(req as any).generatedHash}`,
       origin: mediaOrigin.UPLOAD,
       mediaTypes: mediaTypes.IMAGE,
     };
-    return await this.linkMediaGroupService.createMedia(mediaToCreate);
+    const sentGroup =
+      CreateMediaDto.user_group && JSON.parse(CreateMediaDto.user_group);
+    return await this.linkMediaGroupService.createMedia(
+      mediaToCreate,
+      sentGroup?.id,
+    );
   }
 
-  @ApiOperation({ summary: 'Create a media with an url' })
+  @ApiOperation({
+    summary: 'Create a media with an url',
+    description:
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403. The media goes to their personal group: `user_group` may be left out, another group answers 403. Only `url` is read from the rest of the body.',
+  })
   @UseGuards(AuthGuard)
   @Post('/media/link')
   @UseInterceptors(MediaLinkInterceptor)
   @HttpCode(201)
   async linkMedia(@Body() createMediaDto, @Req() req) {
     const mediaToCreate = {
-      ...createMediaDto,
+      idCreator: ownerFromCaller(
+        createMediaDto.idCreator,
+        req.user.sub,
+        'media',
+      ),
       title: `${req.body.url}`,
       description: 'your media description',
-      user_group: createMediaDto.user_group,
       url: `${req.body.url}`,
       origin: mediaOrigin.LINK,
       mediaTypes: req.mediaTypes,
       hash: req.generatedHash,
     };
-    return await this.linkMediaGroupService.createMedia(mediaToCreate);
+    return await this.linkMediaGroupService.createMedia(
+      mediaToCreate,
+      createMediaDto.user_group?.id,
+    );
   }
 
   @ApiOperation({ summary: 'Get all media for a specific group' })
@@ -145,12 +167,17 @@ export class LinkMediaGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Update a media' })
+  @ApiOperation({
+    summary: 'Update a media',
+    description:
+      'Needs the right to update the media. Only `id`, `title`, `description`, `thumbnailUrl` and `metadata` are read from the body; other fields are ignored. Answers 400 when none of the four is sent.',
+  })
   @ApiOkResponse({
     description: 'The media updated',
     type: Media,
     isArray: false,
   })
+  @ApiBody({ type: UpdateMediaDto })
   @SetMetadata('action', ActionType.UPDATE)
   @UseGuards(AuthGuard)
   @Patch('/media')
@@ -163,7 +190,10 @@ export class LinkMediaGroupController {
       request.user.sub,
       updateGroupMediaDto.id,
       async () => {
-        return this.linkMediaGroupService.updateMedia(updateGroupMediaDto);
+        return this.linkMediaGroupService.updateMedia(
+          updateGroupMediaDto,
+          request.user.sub,
+        );
       },
     );
   }

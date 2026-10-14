@@ -12,6 +12,9 @@ import { User_UserGroupRights } from '../../enum/rights';
 import { UpdateUserGroupDto } from './dto/update-user-group.dto';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
 import { UserGroupTypes } from '../../enum/user-group-types';
+import { pickDefined } from '../../utils/objectFields';
+
+const CREATION_FIELDS = ['title', 'ownerId', 'type'] as const;
 
 @Injectable()
 export class UserGroupService {
@@ -26,7 +29,7 @@ export class UserGroupService {
   async create(createUserGroupDto: CreateUserGroupDto): Promise<UserGroup> {
     try {
       const groupToCreate = {
-        ...createUserGroupDto,
+        ...pickDefined(createUserGroupDto, CREATION_FIELDS),
         description: 'group description here',
       };
       return await this.userGroupRepository.save(groupToCreate);

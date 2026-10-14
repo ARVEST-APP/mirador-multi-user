@@ -1,14 +1,52 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Media } from './entities/media.entity';
+import { UserGroup } from '../user-group/entities/user-group.entity';
 import { Repository } from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
+import { differingFields, pickDefined } from '../../utils/objectFields';
+
+// A creation writes CREATION_FIELDS, and `metadata`, which the service builds.
+const CREATION_FIELDS = [
+  'title',
+  'description',
+  'path',
+  'hash',
+  'url',
+  'origin',
+  'mediaTypes',
+  'idCreator',
+] as const;
+
+// A new media as the server builds it: a link has no `path`, an upload no
+// `url`, and a link without thumbnail no `hash`.
+export type NewMedia = Pick<
+  Media,
+  'title' | 'description' | 'origin' | 'mediaTypes' | 'idCreator'
+> &
+  Partial<Pick<Media, 'path' | 'url' | 'hash'>>;
+// An update writes EDITABLE_FIELDS only. FIXED_FIELDS serves the warning when
+// one is sent with another value.
+const EDITABLE_FIELDS = [
+  'title',
+  'description',
+  'thumbnailUrl',
+  'metadata',
+] as const;
+const FIXED_FIELDS = [
+  'hash',
+  'path',
+  'origin',
+  'idCreator',
+  'url',
+  'mediaTypes',
+];
 
 @Injectable()
 export class MediaService {
@@ -18,11 +56,11 @@ export class MediaService {
     private readonly mediaRepository: Repository<Media>,
   ) {}
 
-  async create(createMediaDto: CreateMediaDto) {
+  async create(newMedia: NewMedia, creatorGroup: UserGroup) {
     try {
       const media = this.mediaRepository.create({
-        ...createMediaDto,
-        metadata: { creator: createMediaDto.user_group.title },
+        ...pickDefined(newMedia, CREATION_FIELDS),
+        metadata: { creator: creatorGroup.title },
       });
       return await this.mediaRepository.save(media);
     } catch (error) {
@@ -57,20 +95,35 @@ export class MediaService {
       );
     }
   }
-  async update(id: number, updateMediaDto: UpdateMediaDto) {
+  async update(id: number, updateMediaDto: UpdateMediaDto, userId: number) {
     try {
+      const fields = pickDefined(updateMediaDto, EDITABLE_FIELDS);
+      if (Object.keys(fields).length === 0) {
+        throw new BadRequestException(
+          `Nothing to update: send at least one of ${EDITABLE_FIELDS.join(', ')}`,
+        );
+      }
       const media = await this.mediaRepository.findOne({ where: { id } });
 
       if (!media) {
         throw new NotFoundException(`Media with ID ${id} not found`);
       }
 
-      Object.assign(media, updateMediaDto);
+      const ignored = differingFields(updateMediaDto, media, FIXED_FIELDS);
+      if (ignored.length > 0) {
+        this.logger.warn(
+          `Update of media ${id} by user ${userId}: ignored ${ignored.join(', ')}, sent with another value than the stored one`,
+        );
+      }
+      Object.assign(media, fields);
 
       await this.mediaRepository.save(media);
 
       return this.findOne(id);
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         'An error occurred while updating the media',

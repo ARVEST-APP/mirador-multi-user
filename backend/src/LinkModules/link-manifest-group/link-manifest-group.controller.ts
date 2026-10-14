@@ -43,6 +43,7 @@ import { UpdateManifestJsonDto } from './dto/UpdateManifestJsonDto';
 import { fileFilterManifest } from './utils/fileFilterManifest';
 import { serializeToValidUrl } from '../../utils/serializeToValideUrl';
 import { UPLOAD_FOLDER } from '../../utils/constants';
+import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
 @Controller('link-manifest-group')
@@ -65,7 +66,11 @@ export class LinkManifestGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'upload a manifest' })
+  @ApiOperation({
+    summary: 'upload a manifest',
+    description:
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403.',
+  })
   @ApiOkResponse({
     description: "The manifest and the user's right on it",
     type: LinkManifestGroup,
@@ -106,12 +111,20 @@ export class LinkManifestGroupController {
       hash: `${(req as any).generatedHash}`,
       description: 'your manifest description',
       title: file.originalname,
-      idCreator: createGroupManifestDto.idCreator,
+      idCreator: ownerFromCaller(
+        createGroupManifestDto.idCreator,
+        req.user.sub,
+        'manifest',
+      ),
     };
     return this.linkManifestGroupService.createManifest(manifestToCreate);
   }
 
-  @ApiOperation({ summary: 'Create a manifest with a link a manifest' })
+  @ApiOperation({
+    summary: 'Create a manifest with a link a manifest',
+    description:
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403. They get the admin right on the manifest: `rights` is ignored. Only `title`, `url` and `path` are read from the rest of the body.',
+  })
   @ApiOkResponse({
     description: "The manifest and the user's right on it",
     type: LinkManifestGroup,
@@ -120,16 +133,28 @@ export class LinkManifestGroupController {
   @ApiBody({ type: CreateGroupManifestDto })
   @UseGuards(AuthGuard)
   @Post('/manifest/link')
-  linkManifest(@Body() createLinkDto: CreateLinkGroupManifestDto) {
+  linkManifest(@Body() createLinkDto: CreateLinkGroupManifestDto, @Req() req) {
     const manifestToCreate = {
-      ...createLinkDto,
+      title: createLinkDto.title,
+      url: createLinkDto.url,
+      path: createLinkDto.path,
+      rights: ManifestGroupRights.ADMIN,
+      idCreator: ownerFromCaller(
+        createLinkDto.idCreator,
+        req.user.sub,
+        'manifest',
+      ),
       description: 'your manifest description',
       origin: manifestOrigin.LINK,
     };
     return this.linkManifestGroupService.createManifest(manifestToCreate);
   }
 
-  @ApiOperation({ summary: 'Create a manifest with a json' })
+  @ApiOperation({
+    summary: 'Create a manifest with a json',
+    description:
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403.',
+  })
   @ApiOkResponse({
     description: "The manifest and the user's right on it",
     type: LinkManifestGroup,
@@ -139,7 +164,15 @@ export class LinkManifestGroupController {
   @UseGuards(AuthGuard)
   @Post('/manifest/creation')
   @UseInterceptors(MediaInterceptor)
-  async createManifest(@Body() createManifestDto: manifestCreationDto) {
+  async createManifest(
+    @Body() createManifestDto: manifestCreationDto,
+    @Req() req,
+  ) {
+    const idCreator = ownerFromCaller(
+      createManifestDto.idCreator,
+      req.user.sub,
+      'manifest',
+    );
     const label = createManifestDto.title;
     if (!label) {
       throw new BadRequestException('Manifest title is required');
@@ -160,7 +193,7 @@ export class LinkManifestGroupController {
         description: 'your manifest description',
         hash: hash,
         path: `${serializeLabel}.json`,
-        idCreator: createManifestDto.idCreator,
+        idCreator,
         rights: ManifestGroupRights.ADMIN,
         origin: manifestOrigin.CREATE,
         thumbnailUrl: createManifestDto.manifestThumbnail,
@@ -235,7 +268,11 @@ export class LinkManifestGroupController {
     );
   }
 
-  @ApiOperation({ summary: 'Update a manifest object' })
+  @ApiOperation({
+    summary: 'Update a manifest object',
+    description:
+      'Needs the right to update the manifest. Only `id`, `title`, `description`, `thumbnailUrl` and `metadata` are read from the body; other fields are ignored. Answers 400 when none of the four is sent.',
+  })
   @ApiOkResponse({
     description: 'The manifest updated',
     type: Manifest,
@@ -254,7 +291,10 @@ export class LinkManifestGroupController {
       request.user.sub,
       updateManifestDto.id,
       async () => {
-        return this.linkManifestGroupService.updateManifest(updateManifestDto);
+        return this.linkManifestGroupService.updateManifest(
+          updateManifestDto,
+          request.user.sub,
+        );
       },
     );
   }

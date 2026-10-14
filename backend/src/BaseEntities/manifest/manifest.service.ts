@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -9,6 +10,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Manifest } from './entities/manifest.entity';
 import { Repository } from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
+import { differingFields, pickDefined } from '../../utils/objectFields';
+
+// An update writes EDITABLE_FIELDS only. FIXED_FIELDS serves the warning when
+// one is sent with another value.
+const EDITABLE_FIELDS = [
+  'title',
+  'description',
+  'thumbnailUrl',
+  'metadata',
+] as const;
+const FIXED_FIELDS = ['hash', 'path', 'origin', 'idCreator', 'url'];
 
 @Injectable()
 export class ManifestService {
@@ -47,12 +59,33 @@ export class ManifestService {
     }
   }
 
-  async update(id: number, updateManifestDto: UpdateManifestDto) {
+  async update(
+    id: number,
+    updateManifestDto: UpdateManifestDto,
+    userId: number,
+  ) {
     try {
-      const done = await this.manifestRepository.update(id, updateManifestDto);
+      const fields = pickDefined(updateManifestDto, EDITABLE_FIELDS);
+      if (Object.keys(fields).length === 0) {
+        throw new BadRequestException(
+          `Nothing to update: send at least one of ${EDITABLE_FIELDS.join(', ')}`,
+        );
+      }
+      const stored = await this.findOne(id);
+      if (!stored) throw new NotFoundException(id);
+      const ignored = differingFields(updateManifestDto, stored, FIXED_FIELDS);
+      if (ignored.length > 0) {
+        this.logger.warn(
+          `Update of manifest ${id} by user ${userId}: ignored ${ignored.join(', ')}, sent with another value than the stored one`,
+        );
+      }
+      const done = await this.manifestRepository.update(id, fields);
       if (done.affected != 1) throw new NotFoundException(id);
       return this.findOne(id);
     } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
         `An error occurred while updating the manifest with id ${id}`,

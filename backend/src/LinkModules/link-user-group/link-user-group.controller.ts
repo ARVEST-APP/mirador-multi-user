@@ -24,6 +24,7 @@ import { LinkGroupProject } from '../link-group-project/entities/link-group-proj
 import { LinkUserGroup } from './entities/link-user-group.entity';
 import { UpdateUserGroupDto } from './dto/update-user-group.dto';
 import { Language } from '../../utils/email/utils';
+import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
 @Controller('link-user-group')
@@ -83,7 +84,7 @@ export class LinkUserGroupController {
 
   @ApiOperation({ summary: 'Create a user' })
   @ApiOkResponse({
-    description: 'The user creation route',
+    description: 'The created user, without its password.',
     type: CreateUserDto,
     isArray: false,
   })
@@ -93,7 +94,11 @@ export class LinkUserGroupController {
     return await this.linkUserGroupService.createUser(createUserDto);
   }
 
-  @ApiOperation({ summary: 'Create a group' })
+  @ApiOperation({
+    summary: 'Create a group',
+    description:
+      'The owner and first admin is the logged in user. `ownerId` and `user.id` are only compared with it: they may be left out, another id answers 403. Nothing else of `user` is read; of the rest of the body, only `title` is used.',
+  })
   @ApiOkResponse({
     description: 'The group creation route',
     type: CreateUserGroupDto,
@@ -101,8 +106,19 @@ export class LinkUserGroupController {
   })
   @UseGuards(AuthGuard)
   @Post('/group')
-  createGroup(@Body() createUserGroupDto: CreateUserGroupDto) {
-    return this.linkUserGroupService.createUserGroup(createUserGroupDto);
+  createGroup(@Body() createUserGroupDto: CreateUserGroupDto, @Req() request) {
+    const ownerId = ownerFromCaller(
+      createUserGroupDto.ownerId,
+      request.user.sub,
+      'group',
+    );
+    // `user` used to name the first admin: it is no longer used, only refused
+    // when it is someone else.
+    ownerFromCaller(createUserGroupDto.user?.id, request.user.sub, 'group');
+    return this.linkUserGroupService.createUserGroup(
+      createUserGroupDto.title,
+      ownerId,
+    );
   }
 
   @ApiOperation({ summary: 'Grant access to a group to a user' })
