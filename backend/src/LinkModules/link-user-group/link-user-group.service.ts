@@ -266,7 +266,10 @@ export class LinkUserGroupService {
       await this.linkUserGroupRepository.upsert(linkUserToUserGroup, {
         conflictPaths: ['rights', 'user', 'user_group'],
       });
-      return linkUserToUserGroup;
+      return {
+        ...linkUserToUserGroup,
+        user: pickDefined(linkUserToUserGroup.user, GROUP_MEMBER_FIELDS),
+      };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
