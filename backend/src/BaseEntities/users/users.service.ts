@@ -10,12 +10,29 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { QueryFailedError, Repository, UpdateResult } from 'typeorm';
+import {
+  FindOptionsSelect,
+  QueryFailedError,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { CustomLogger } from '../../utils/Logger/CustomLogger.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Language } from '../../utils/email/utils';
 import { PASSWORD_MINIMUM_LENGTH } from '../../auth/utils';
+
+const USER_LIST_FIELDS = {
+  id: true,
+  mail: true,
+  name: true,
+  createdAt: true,
+  _isAdmin: true,
+  isEmailConfirmed: true,
+  preferredLanguage: true,
+  lastConnectedAt: true,
+  termsValidatedAt: true,
+} satisfies FindOptionsSelect<User>;
 
 @Injectable()
 export class UsersService {
@@ -190,9 +207,9 @@ export class UsersService {
     }
   }
 
-  async findAllUsers(): Promise<User[]> {
+  async findAllUsers(): Promise<Pick<User, keyof typeof USER_LIST_FIELDS>[]> {
     try {
-      return await this.userRepository.find();
+      return await this.userRepository.find({ select: USER_LIST_FIELDS });
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
