@@ -11,6 +11,9 @@ import { ImpersonationService } from './impersonation.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { ImpersonateDto } from './dto/impersonateDto';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { pickDefined } from '../utils/objectFields';
+
+const IMPERSONATED_USER_FIELDS = ['id', 'mail', 'name'] as const;
 
 @ApiBearerAuth()
 @Controller('impersonation')
@@ -31,7 +34,10 @@ export class ImpersonationController {
 
     const redirectUrl = `${process.env.FRONTEND_URL}/impersonate/?token=${impersonation.token}`;
 
-    return res.json({ redirectUrl: redirectUrl, user: impersonation.user });
+    return res.json({
+      redirectUrl: redirectUrl,
+      user: pickDefined(impersonation.user, IMPERSONATED_USER_FIELDS),
+    });
   }
 
   @ApiOperation({
