@@ -337,7 +337,10 @@ export class LinkUserGroupService {
         conflictPaths: ['user', 'user_group'],
       });
 
-      return linkGroup;
+      return {
+        ...linkGroup,
+        user: pickDefined(linkGroup.user, GROUP_MEMBER_FIELDS),
+      };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       if (error instanceof ForbiddenException) {
