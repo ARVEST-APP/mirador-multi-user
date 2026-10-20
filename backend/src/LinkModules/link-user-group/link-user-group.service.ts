@@ -27,6 +27,9 @@ import { LinkMetadataFormatGroupService } from '../link-metadata-format-group/li
 import { dublinCoreSample } from '../../utils/metadataSample/dublinCoreSample';
 import { UpdateUserGroupDto } from './dto/update-user-group.dto';
 import { Language } from '../../utils/email/utils';
+import { pickDefined } from '../../utils/objectFields';
+
+const GROUP_MEMBER_FIELDS = ['id', 'name'] as const;
 
 @Injectable()
 export class LinkUserGroupService {
@@ -263,7 +266,10 @@ export class LinkUserGroupService {
       await this.linkUserGroupRepository.upsert(linkUserToUserGroup, {
         conflictPaths: ['rights', 'user', 'user_group'],
       });
-      return linkUserToUserGroup;
+      return {
+        ...linkUserToUserGroup,
+        user: pickDefined(linkUserToUserGroup.user, GROUP_MEMBER_FIELDS),
+      };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(
@@ -334,7 +340,10 @@ export class LinkUserGroupService {
         conflictPaths: ['user', 'user_group'],
       });
 
-      return linkGroup;
+      return {
+        ...linkGroup,
+        user: pickDefined(linkGroup.user, GROUP_MEMBER_FIELDS),
+      };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       if (error instanceof ForbiddenException) {
@@ -381,7 +390,11 @@ export class LinkUserGroupService {
         usersInGroup.map(async (userGroup) => {
           const personalOwnerGroup =
             await this.groupService.findUserPersonalGroup(userGroup.user.id);
-          return { ...userGroup, personalOwnerGroupId: personalOwnerGroup.id };
+          return {
+            ...userGroup,
+            user: pickDefined(userGroup.user, GROUP_MEMBER_FIELDS),
+            personalOwnerGroupId: personalOwnerGroup.id,
+          };
         }),
       );
     } catch (error) {
