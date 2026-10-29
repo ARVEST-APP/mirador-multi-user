@@ -4,3 +4,4 @@ logs
 upload
 **/.env*
 *.log
+*Dockerfile.old
