@@ -20,7 +20,7 @@
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@mui/x-date-pickers": "^7.21.0",
     "@tanstack/react-query": "^5.32.0",
-    "@types/node": "^20.12.7",
+    "@types/node": "^22.20.5",
     "cron": "^3.2.1",
     "dayjs": "^1.11.13",
     "i18next": "^24.1.2",
