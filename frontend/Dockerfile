@@ -40,7 +40,7 @@ ENV VITE_MAX_UPLOAD_SIZE=$VITE_MAX_UPLOAD_SIZE
 COPY . .
 
 # Install serve to render index.html in ENV=PROD
-RUN npm install --global serve
+RUN npm install --global serve@14.2.6
 
 # Build the application
 RUN npm run build
