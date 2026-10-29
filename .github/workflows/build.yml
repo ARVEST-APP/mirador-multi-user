@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20  # Specify your project's Node.js version
+          node-version: 22  # Specify your project's Node.js version
 
       # Navigate to frontend folder and install dependencies
       - name: Install dependencies
