@@ -7,6 +7,14 @@
 // See docker-compose.yml file for more details
 export const UPLOAD_FOLDER = './upload';
 
+// multer limits shared by the upload forms. Their field names are flat
+// (`file`, `idCreator`, `user_group`), so a name with brackets is refused
+// before multer builds nested objects or arrays from it.
+export const UPLOAD_FORM_LIMITS = {
+  fieldNestingDepth: 0,
+  fields: 10,
+};
+
 export const LOGS_FOLDER = './logs';
 
 // Default snapshot file name
