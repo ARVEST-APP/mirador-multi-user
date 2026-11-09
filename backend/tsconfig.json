@@ -10,6 +10,10 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      // node10 resolution ignores "exports" and reads sharp's ES-module types; remove with nodenext.
+      "sharp": ["node_modules/sharp/dist/index.d.cts"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
