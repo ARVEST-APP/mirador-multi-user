@@ -42,7 +42,7 @@ import { Manifest } from '../../BaseEntities/manifest/entities/manifest.entity';
 import { UpdateManifestJsonDto } from './dto/UpdateManifestJsonDto';
 import { fileFilterManifest } from './utils/fileFilterManifest';
 import { serializeToValidUrl } from '../../utils/serializeToValideUrl';
-import { UPLOAD_FOLDER } from '../../utils/constants';
+import { UPLOAD_FOLDER, UPLOAD_FORM_LIMITS } from '../../utils/constants';
 import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
@@ -97,6 +97,7 @@ export class LinkManifestGroupController {
         },
       }),
       fileFilter: fileFilterManifest,
+      limits: UPLOAD_FORM_LIMITS,
     }),
   )
   uploadManifest(

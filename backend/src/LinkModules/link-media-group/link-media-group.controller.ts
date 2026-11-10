@@ -37,7 +37,7 @@ import {
 import { LinkMediaGroup } from './entities/link-media-group.entity';
 import { Media } from '../../BaseEntities/media/entities/media.entity';
 import { mediaTypes } from '../../enum/mediaTypes';
-import { UPLOAD_FOLDER } from '../../utils/constants';
+import { UPLOAD_FOLDER, UPLOAD_FORM_LIMITS } from '../../utils/constants';
 import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
@@ -71,6 +71,7 @@ export class LinkMediaGroupController {
       }),
       fileFilter: fileFilterMedia,
       limits: {
+        ...UPLOAD_FORM_LIMITS,
         fileSize:
           (parseInt(process.env.MAX_UPLOAD_SIZE, 10) || 1000) * 1024 * 1024,
       },
