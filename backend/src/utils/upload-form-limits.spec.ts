@@ -10,6 +10,7 @@ import { LinkMediaGroupController } from '../LinkModules/link-media-group/link-m
 import { LinkMediaGroupService } from '../LinkModules/link-media-group/link-media-group.service';
 import { LinkManifestGroupController } from '../LinkModules/link-manifest-group/link-manifest-group.controller';
 import { LinkManifestGroupService } from '../LinkModules/link-manifest-group/link-manifest-group.service';
+import { UPLOAD_FOLDER } from './constants';
 
 // Through a real Nest application, so that the forms go through FileInterceptor
 // and multer as in production.
@@ -119,6 +120,38 @@ describe('Upload forms', () => {
       await form.attach('file', content, name).expect(400);
 
       expect(create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /link-manifest-group/manifest/upload, the file size', () => {
+    const MB = 1024 * 1024;
+    const upload = (size: number) =>
+      request(app.getHttpServer())
+        .post('/link-manifest-group/manifest/upload')
+        .attach('file', Buffer.alloc(size, ' '), 'large.json');
+    const filesInUploadFolder = () =>
+      fs.existsSync(UPLOAD_FOLDER)
+        ? fs
+            .readdirSync(UPLOAD_FOLDER, {
+              recursive: true,
+              withFileTypes: true,
+            })
+            .filter((entry) => entry.isFile()).length
+        : 0;
+
+    it('accepts a file of 5 MB', async () => {
+      await upload(5 * MB).expect(201);
+
+      expect(createManifest).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses a file over 5 MB with 413 and keeps none of it', async () => {
+      const filesBefore = filesInUploadFolder();
+
+      await upload(5 * MB + 1).expect(413);
+
+      expect(createManifest).not.toHaveBeenCalled();
+      expect(filesInUploadFolder()).toBe(filesBefore);
     });
   });
 });
