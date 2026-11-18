@@ -15,6 +15,9 @@ export const UPLOAD_FORM_LIMITS = {
   fields: 10,
 };
 
+// The largest file the manifest upload form accepts: 5 MB.
+export const MANIFEST_MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 export const LOGS_FOLDER = './logs';
 
 // Default snapshot file name

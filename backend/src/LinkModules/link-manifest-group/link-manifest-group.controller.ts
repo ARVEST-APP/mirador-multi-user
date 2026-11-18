@@ -42,7 +42,11 @@ import { Manifest } from '../../BaseEntities/manifest/entities/manifest.entity';
 import { UpdateManifestJsonDto } from './dto/UpdateManifestJsonDto';
 import { fileFilterManifest } from './utils/fileFilterManifest';
 import { serializeToValidUrl } from '../../utils/serializeToValideUrl';
-import { UPLOAD_FOLDER, UPLOAD_FORM_LIMITS } from '../../utils/constants';
+import {
+  MANIFEST_MAX_FILE_SIZE,
+  UPLOAD_FOLDER,
+  UPLOAD_FORM_LIMITS,
+} from '../../utils/constants';
 import { ownerFromCaller } from '../../utils/ownerFromCaller';
 
 @ApiBearerAuth()
@@ -69,7 +73,7 @@ export class LinkManifestGroupController {
   @ApiOperation({
     summary: 'upload a manifest',
     description:
-      'The creator is the logged in user: `idCreator` may be left out, another id answers 403.',
+      'The creator is the logged in user: `idCreator` may be left out, another id answers 403. A file over 5 MB answers 413.',
   })
   @ApiOkResponse({
     description: "The manifest and the user's right on it",
@@ -97,7 +101,10 @@ export class LinkManifestGroupController {
         },
       }),
       fileFilter: fileFilterManifest,
-      limits: UPLOAD_FORM_LIMITS,
+      limits: {
+        ...UPLOAD_FORM_LIMITS,
+        fileSize: MANIFEST_MAX_FILE_SIZE,
+      },
     }),
   )
   uploadManifest(
